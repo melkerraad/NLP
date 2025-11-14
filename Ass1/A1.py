@@ -1,400 +1,469 @@
-
-import torch, nltk, pickle
-from torch import nn
-from collections import Counter
-from torch.utils.data import DataLoader
-import numpy as np
-import sys, time, os
-os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
-sys.modules['scipy'] = None 
-from transformers import BatchEncoding, PretrainedConfig, PreTrainedModel
-from datasets import load_dataset
-from torch.utils.data import Subset
-from dataclasses import dataclass
+import os
+import sys
 import time
+import pickle
+from dataclasses import dataclass
+from collections import Counter
+
+import numpy as np
+import torch
+from torch import nn
+from torch.utils.data import DataLoader
+from datasets import load_dataset
+from transformers import BatchEncoding, PretrainedConfig, PreTrainedModel
+
+import nltk
+
+os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
+sys.modules["scipy"] = None  # workaround for HF/datasets on some systems
+
 
 ###
-### Part 1. Tokenization.
+### Part 1. Tokenization & Vocabulary
 ###
 
 def lowercase_tokenizer(text):
+    """Split text into lowercase tokens using NLTK."""
     return [t.lower() for t in nltk.word_tokenize(text)]
 
-def build_tokenizer(train_file, tokenize_fun=lowercase_tokenizer, max_voc_size=None, model_max_length=None,
-                    pad_token='<PAD>', unk_token='<UNK>', bos_token='<BOS>', eos_token='<EOS>'):
-    """ Build a tokenizer from the given file.
 
-        Args:
-             train_file:        The name of the file containing the training texts.
-             tokenize_fun:      The function that maps a text to a list of string tokens.
-             max_voc_size:      The maximally allowed size of the vocabulary.
-             model_max_length:  Truncate texts longer than this length.
-             pad_token:         The dummy string corresponding to padding.
-             unk_token:         The dummy string corresponding to out-of-vocabulary tokens.
-             bos_token:         The dummy string corresponding to the beginning of the text.
-             eos_token:         The dummy string corresponding to the end the text.
+def build_tokenizer(
+    train_file,
+    tokenize_fun=lowercase_tokenizer,
+    max_voc_size=None,
+    model_max_length=None,
+    pad_token='<PAD>',
+    unk_token='<UNK>',
+    bos_token='<BOS>',
+    eos_token='<EOS>'
+):
+    """
+    Build a vocabulary from the training file.
+
+    Returns:
+        vocabulary: dict token_str -> int_id
+        inverse_vocabulary: dict int_id -> token_str
     """
 
-    # TODO: build the vocabulary, possibly truncating it to max_voc_size if that is specified.
     word_counter = Counter()
-    with open(train_file, "r") as file:
-        for line in file:
-            line = line.strip()
-            if not line:
+
+    with open(train_file, "r") as f:
+        for line in f:
+            text = line.strip()
+            if not text:
                 continue
-            lis = tokenize_fun(line)
-            word_counter.update(lis)
-        if max_voc_size is not None:
-            most_common = word_counter.most_common(max(0, max_voc_size - 4))
-        else:
-            most_common = word_counter.most_common()
+            tokens = tokenize_fun(text)
+            word_counter.update(tokens)
 
-        vocabulary = {bos_token: 1, eos_token: 2, unk_token: 3, pad_token: 4}
-        for idx, (word, count) in enumerate(most_common, start=5):
-            vocabulary[word] = idx
+    # reserve 4 ids for special tokens
+    if max_voc_size is None:
+        most_common = word_counter.most_common()
+    else:
+        most_common = word_counter.most_common(max_voc_size - 4)
 
-        inverse_vocabulary = {v: k for k, v in vocabulary.items()}
+    # IMPORTANT: pad_token must be id 0
+    vocabulary = {
+        pad_token: 0,
+        bos_token: 1,
+        eos_token: 2,
+        unk_token: 3,
+    }
 
-        return vocabulary, inverse_vocabulary
+    idx = 4
+    for word, _ in most_common:
+        vocabulary[word] = idx
+        idx += 1
 
-vocabulary, inverse_vocabulary = build_tokenizer("/data/courses/2025_dat450_dit247/assignments/a1/train.txt", max_voc_size=20000)
+    inverse_vocabulary = {v: k for k, v in vocabulary.items()}
+    return vocabulary, inverse_vocabulary
 
-    # Then return a tokenizer object (implemented below).
-    #...
 
 class A1Tokenizer:
-    """A minimal implementation of a tokenizer similar to tokenizers in the HuggingFace library."""
+    """
+    Minimal HuggingFace-like tokenizer.
+    - adds <BOS> at start, <EOS> at end
+    - supports truncation to model_max_length
+    - supports padding to same length
+    - returns BatchEncoding(input_ids, attention_mask)
+    """
 
     def __init__(self, vocabulary, max_length):
-        # TODO: store all values you need in order to implement __call__ below.
-        self.pad_token_id = vocabulary['<PAD>']     # Compulsory attribute.
-        self.beginning_token_id = vocabulary['<BOS>']
-        self.end_token_id = vocabulary['<EOS>']
-        self.unknown_token_id = vocabulary['<UNK>']
-        self.model_max_length = max_length # Needed for truncation.
         self.vocabulary = vocabulary
+        self.inverse_vocabulary = {v: k for k, v in vocabulary.items()}
+
+        self.pad_token_id = vocabulary['<PAD>']
+        self.bos_token_id = vocabulary['<BOS>']
+        self.eos_token_id = vocabulary['<EOS>']
+        self.unk_token_id = vocabulary['<UNK>']
+
+        self.model_max_length = max_length
 
     def __call__(self, texts, truncation=False, padding=False, return_tensors=None):
-        """Tokenize the given texts and return a BatchEncoding containing the integer-encoded tokens.
-           
-           Args:
-             texts:           The texts to tokenize.
-             truncation:      Whether the texts should be truncated to model_max_length.
-             padding:         Whether the tokenized texts should be padded on the right side.
-             return_tensors:  If None, then return lists; if 'pt', then return PyTorch tensors.
-
-           Returns:
-             A BatchEncoding where the field `input_ids` stores the integer-encoded texts.
         """
-        if return_tensors and return_tensors != 'pt':
-            raise ValueError('Should be pt')
+        Args:
+            texts: list of strings
+            truncation: if True, clip to model_max_length
+            padding: if True, right-pad to same length
+            return_tensors: None or 'pt'
 
-        batch_input_ids = []
-        max_len = 0
+        Returns:
+            BatchEncoding({"input_ids": ..., "attention_mask": ...})
+        """
+
+        if return_tensors is not None and return_tensors != "pt":
+            raise ValueError("Only return_tensors='pt' is supported.")
+
+        all_ids = []
+
+        # 1. tokenize each text and map to ids
         for text in texts:
-            text_splitted = lowercase_tokenizer(text)
-            text_of_token_id = [self.beginning_token_id]
+            tokens = lowercase_tokenizer(text)
+
+            ids = [self.bos_token_id]
+            for t in tokens:
+                ids.append(self.vocabulary.get(t, self.unk_token_id))
+            ids.append(self.eos_token_id)
+
+            # truncation (if requested)
+            if truncation and len(ids) > self.model_max_length:
+                ids = ids[:self.model_max_length]
+
+            all_ids.append(ids)
+
+        # 2. padding (if requested)
+        if padding:
             if truncation:
-                text_of_token_id += [self.vocabulary.get(word, self.unknown_token_id) for word in text_splitted[:self.model_max_length-2]]
-                text_of_token_id.append(self.end_token_id)
-                if padding:
-                    padding_amount = self.model_max_length - len(text_of_token_id)
-                    if padding_amount > 0:
-                        text_of_token_id.extend([self.pad_token_id] * padding_amount)
-                batch_input_ids.append(text_of_token_id)          
+                max_len = self.model_max_length
             else:
-                text_of_token_id += [self.vocabulary.get(word, self.unknown_token_id) for word in text_splitted]
-                text_of_token_id.append(self.end_token_id)
-                batch_input_ids.append(text_of_token_id)
-                max_len = max(max_len, len(text_of_token_id))
-        if padding and not truncation:
-            for sentence in batch_input_ids:
-                pad_length = max_len - len(sentence)
-                if pad_length > 0:
-                    sentence.extend([self.pad_token_id] * pad_length)
+                max_len = max(len(seq) for seq in all_ids)
 
-        #attention_mask = [[1 if token != self.pad_token_id else 0 for token in seq] for seq in batch_input_ids]
-                
+            for seq in all_ids:
+                pad_len = max_len - len(seq)
+                if pad_len > 0:
+                    seq.extend([self.pad_token_id] * pad_len)
+
+        # 3. attention mask: 1 for real tokens, 0 for PAD
+        attention_mask = [
+            [1 if tok != self.pad_token_id else 0 for tok in seq]
+            for seq in all_ids
+        ]
+
         if return_tensors == "pt":
-            batch_input_ids = torch.tensor(batch_input_ids, dtype=torch.long)
-            #attention_mask = torch.tensor(attention_mask, dtype=torch.long)
+            all_ids = torch.tensor(all_ids, dtype=torch.long)
+            attention_mask = torch.tensor(attention_mask, dtype=torch.long)
 
-        return BatchEncoding({"input_ids": batch_input_ids})
-
-        
-
-
-        
-        # TODO: Your work here is to split the texts into words and map them to integer values.
-        # 
-        # - If `truncation` is set to True, the length of the encoded sequences should be 
-        #   at most self.model_max_length.
-        # - Encoded sequences should start with the beginning-of-sequence dummy; non-truncated
-        #   sequences should end with the end-of-sequence dummy; out-of-vocabulary tokens should
-        #   be encoded with the 'unknown' dummy.
-        # - If `padding` is set to True, then all the integer-encoded sequences should be of the
-        #   same length. That is: the shorter sequences should be "padded" by adding dummy padding
-        #   tokens on the right side.
-        # - If `return_tensors` is undefined, then the returned `input_ids` should be a list of lists.
-        #   Otherwise, if `return_tensors` is 'pt', then `input_ids` should be a PyTorch 2D tensor.
-
-        # TODO: Return a BatchEncoding where input_ids stores the result of the integer encoding.
-        # Optionally, if you want to be 100% HuggingFace-compatible, you should also include an 
-        # attention mask of the same shape as input_ids. In this mask, padding tokens correspond
-        # to the the value 0 and real tokens to the value 1.
+        return BatchEncoding(
+            {
+                "input_ids": all_ids,
+                "attention_mask": attention_mask,
+            }
+        )
 
     def __len__(self):
-        """Return the size of the vocabulary."""
         return len(self.vocabulary)
-    
+
     def save(self, filename):
-        """Save the tokenizer to the given file."""
-        with open(filename, 'wb') as f:
+        with open(filename, "wb") as f:
             pickle.dump(self, f)
 
     @staticmethod
     def from_file(filename):
-        """Load a tokenizer from the given file."""
-        with open(filename, 'rb') as f:
+        with open(filename, "rb") as f:
             return pickle.load(f)
-   
+
+
 ###
-### Part 3. Defining the model.
+### Part 3. Model definition
 ###
 
 class A1RNNModelConfig(PretrainedConfig):
-    """Configuration object that stores hyperparameters that define the RNN-based language model."""
+    """Configuration object storing model hyperparameters."""
+
     def __init__(self, vocab_size=None, embedding_size=None, hidden_size=None, **kwargs):
         super().__init__(**kwargs)
         self.vocab_size = vocab_size
-        self.hidden_size = hidden_size
         self.embedding_size = embedding_size
+        self.hidden_size = hidden_size
+
 
 class A1RNNModel(PreTrainedModel):
-    """The neural network model that implements a RNN-based language model."""
+    """
+    Simple LSTM-based language model:
+    - embedding
+    - 2-layer LSTM
+    - linear "unembedding" to vocab logits
+    """
+
     config_class = A1RNNModelConfig
-    
+
     def __init__(self, config):
         super().__init__(config)
-        self.embedding = nn.Embedding(num_embeddings=config.vocab_size, embedding_dim=config.embedding_size)
-        self.rnn = nn.LSTM(input_size=config.embedding_size, hidden_size=config.hidden_size, num_layers=2, batch_first=True, dropout=0.1)
-        self.unembedding = nn.Linear(in_features=config.hidden_size, out_features=config.vocab_size)
+
+        self.embedding = nn.Embedding(
+            num_embeddings=config.vocab_size,
+            embedding_dim=config.embedding_size,
+            padding_idx=0  # PAD is id 0
+        )
+
+        self.rnn = nn.LSTM(
+            input_size=config.embedding_size,
+            hidden_size=config.hidden_size,
+            num_layers=2,
+            batch_first=True,
+            dropout=0.1,
+        )
+
         self.dropout = nn.Dropout(0.2)
-        
+
+        self.unembedding = nn.Linear(
+            in_features=config.hidden_size,
+            out_features=config.vocab_size,
+        )
+
+        self.post_init()  # HF utility to init weights
+
     def forward(self, X):
-        """The forward pass of the RNN-based language model.
-        
-           Args:
-             X:  The input tensor (2D), consisting of a batch of integer-encoded texts.
-           Returns:
-             The output tensor (3D), consisting of logits for all token positions for all vocabulary items.
         """
-        embedded = self.embedding(X)
-        rnn_out, _ = self.rnn(embedded)
+        Args:
+            X: LongTensor (batch_size, seq_len)
+
+        Returns:
+            logits: FloatTensor (batch_size, seq_len, vocab_size)
+        """
+        emb = self.embedding(X)            # (B, T, E)
+        rnn_out, _ = self.rnn(emb)         # (B, T, H)
         rnn_out = self.dropout(rnn_out)
-        out = self.unembedding(rnn_out)
-        return out
+        logits = self.unembedding(rnn_out) # (B, T, V)
+        return logits
 
 
 ###
-### Part 4. Training the language model.
+### Part 4. Training setup
 ###
-
-## Hint: the following TrainingArguments hyperparameters may be relevant for your implementation:
-#
-# - optim:            What optimizer to use. You can assume that this is set to 'adamw_torch',
-#                     meaning that we use the PyTorch AdamW optimizer.
-# - eval_strategy:    You can assume that this is set to 'epoch', meaning that the model should
-#                     be evaluated on the validation set after each epoch
-# - use_cpu:          Force the trainer to use the CPU; otherwise, CUDA or MPS should be used.
-#                     (In your code, you can just use the provided method select_device.)
-# - learning_rate:    The optimizer's learning rate.
-# - num_train_epochs: The number of epochs to use in the training loop.
-# - per_device_train_batch_size: 
-#                     The batch size to use while training.
-# - per_device_eval_batch_size:
-#                     The batch size to use while evaluating.
-# - output_dir:       The directory where the trained model will be saved.
 
 @dataclass
 class TrainingArguments:
-    optim: str = 'adamw_torch'
-    eval_strategy: str = 'epoch'
+    optim: str = "adamw_torch"
+    eval_strategy: str = "epoch"
     use_cpu: bool = False
     no_cuda: bool = False
+
     learning_rate: float = 0.001
-    num_train_epochs: int = 10
-    per_device_train_batch_size: int = 64
-    per_device_eval_batch_size: int = 64
-    output_dir: str = '.'
+    num_train_epochs: int = 20
+    per_device_train_batch_size: int = 32
+    per_device_eval_batch_size: int = 32
+    output_dir: str = "Ass1Model"  # used by save_pretrained
 
 
 class A1Trainer:
-    """A minimal implementation similar to a Trainer from the HuggingFace library."""
+    """
+    Minimal HF-like trainer for our RNN LM.
+    """
 
     def __init__(self, model, args, train_dataset, eval_dataset, tokenizer):
-        """Set up the trainer.
-           
-           Args:
-             model:          The model to train.
-             args:           The training parameters stored in a TrainingArguments object.
-             train_dataset:  The dataset containing the training documents.
-             eval_dataset:   The dataset containing the validation documents.
-             eval_dataset:   The dataset containing the validation documents.
-             tokenizer:      The tokenizer.
-        """
         self.model = model
         self.args = args
         self.train_dataset = train_dataset
         self.eval_dataset = eval_dataset
         self.tokenizer = tokenizer
 
-        assert(args.optim == 'adamw_torch')
-        assert(args.eval_strategy == 'epoch')
+        assert args.optim == "adamw_torch"
+        assert args.eval_strategy == "epoch"
 
     def select_device(self):
-        """Return the device to use for training, depending on the training arguments and the available backends."""
         if self.args.use_cpu:
-            return torch.device('cpu')
+            return torch.device("cpu")
         if not self.args.no_cuda and torch.cuda.is_available():
-            return torch.device('cuda')
-        if torch.mps.is_available():
-            return torch.device('mps')
-        return torch.device('cpu')
-    
+            return torch.device("cuda")
+        if torch.backends.mps.is_available():
+            return torch.device("mps")
+        return torch.device("cpu")
+
     def train(self):
-        """Train the model."""
         args = self.args
 
         device = self.select_device()
-        print('Device:', device)
+        print("Using device:", device)
         self.model.to(device)
-        
-        loss_func = torch.nn.CrossEntropyLoss(ignore_index=self.tokenizer.pad_token_id)
 
-        # TODO: Relevant arguments: at least args.learning_rate, but you can optionally also consider
-        # other Adam-related hyperparameters here.
-        optimizer = torch.optim.AdamW(self.model.parameters(), lr=args.learning_rate, weight_decay=5e-4)
+        loss_func = nn.CrossEntropyLoss(
+            ignore_index=self.tokenizer.pad_token_id,
+            reduction="mean"
+        )
 
-        # TODO: Relevant arguments: args.per_device_train_batch_size, args.per_device_eval_batch_size
-        train_loader = DataLoader(self.train_dataset, batch_size=args.per_device_train_batch_size, shuffle=True)
-        val_loader = DataLoader(self.eval_dataset, batch_size=args.per_device_eval_batch_size)
-        
-        # TODO: Your work here is to implement the training loop.
-        for epoch in range(args.num_train_epochs): #args.num_train_epochs:
+        optimizer = torch.optim.AdamW(
+            self.model.parameters(),
+            lr=args.learning_rate,
+            weight_decay=1e-4,
+        )
+
+        train_loader = DataLoader(
+            self.train_dataset,
+            batch_size=args.per_device_train_batch_size,
+            shuffle=True,
+        )
+
+        val_loader = DataLoader(
+            self.eval_dataset,
+            batch_size=args.per_device_eval_batch_size,
+        )
+
+        for epoch in range(args.num_train_epochs):
             start_time = time.time()
             self.model.train()
+
             total_loss = 0.0
+            total_tokens = 0
 
             for batch in train_loader:
-                #texts = batch['text']
-                #batch_enc = self.tokenizer(texts, truncation=True, padding=True, return_tensors='pt')
-                input_ids = batch['input_ids'].to(device)
-                X = input_ids[:,:-1]
+                input_ids = batch["input_ids"].to(device)  # (B, T)
+
+                # X: all but last token; Y: all but first token
+                X = input_ids[:, :-1]
                 Y = input_ids[:, 1:]
 
-                logits = self.model(X)
-                logits = logits.view(-1, logits.shape[-1])
-                targets = Y.reshape(-1)
-                loss = loss_func(logits, targets)
-                
                 optimizer.zero_grad()
+
+                logits = self.model(X)  # (B, T-1, V)
+
+                logits_flat = logits.reshape(-1, logits.size(-1))  # (B*(T-1), V)
+                targets_flat = Y.reshape(-1)                       # (B*(T-1))
+
+                loss = loss_func(logits_flat, targets_flat)
                 loss.backward()
 
                 nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
                 optimizer.step()
 
-                total_loss += loss.item()
+                # count real tokens (non-PAD) to compute avg per token
+                non_pad = (targets_flat != self.tokenizer.pad_token_id).sum().item()
+                total_loss += loss.item() * non_pad
+                total_tokens += non_pad
 
-            avg_train_loss = total_loss / len(train_loader)
-            print(f"Epoch {epoch+1}/[{args.num_train_epochs} | Train loss: {avg_train_loss:.4f}]")
+            avg_train_loss = total_loss / total_tokens
+            print(f"Epoch {epoch+1}/{args.num_train_epochs} - Train loss: {avg_train_loss:.4f}")
 
+            # ---- Validation ----
             self.model.eval()
             val_loss = 0.0
+            val_tokens = 0
+
             with torch.no_grad():
                 for batch in val_loader:
-                    #texts = batch['text']
-                    #batch_enc = self.tokenizer(texts, truncation=True, padding=True, return_tensors='pt')
-                    input_ids = batch['input_ids'].to(device)
-                    X = input_ids[:,:-1]
+                    input_ids = batch["input_ids"].to(device)
+
+                    X = input_ids[:, :-1]
                     Y = input_ids[:, 1:]
 
                     logits = self.model(X)
-                    logits = logits.view(-1, logits.shape[-1])
-                    targets = Y.reshape(-1)
-                    loss = loss_func(logits, targets)
-                    val_loss += loss.item()
-            avg_val_loss = val_loss / len(val_loader)
+                    logits_flat = logits.reshape(-1, logits.size(-1))
+                    targets_flat = Y.reshape(-1)
+
+                    loss = loss_func(logits_flat, targets_flat)
+
+                    non_pad = (targets_flat != self.tokenizer.pad_token_id).sum().item()
+                    val_loss += loss.item() * non_pad
+                    val_tokens += non_pad
+
+            avg_val_loss = val_loss / val_tokens
+            ppl = np.exp(avg_val_loss)
+
             epoch_time = time.time() - start_time
-            print(f"Validation: {avg_val_loss: .4f}")
-            print(f"Time for epoch: {epoch_time:.2f}s")
+            print(f"  Validation loss: {avg_val_loss:.4f} | Perplexity: {ppl:.2f}")
+            print(f"  Epoch time: {epoch_time:.2f}s")
+
+        print(f"Saving model to {args.output_dir} ...")
         self.model.save_pretrained(args.output_dir)
-            
-
-        #       
-        # for each training epoch (use args.num_train_epochs here):
-        #   for each batch B in the training set:
-        #
-        #       PREPROCESSING AND FORWARD PASS:
-        #       input_ids = apply your tokenizer to B
-	    #       X = all columns in input_ids except the last one
-	    #       Y = all columns in input_ids except the first one
-	    #       put X and Y onto the GPU (or whatever device you use)
-        #       apply the model to X
-        #   	compute the loss for the model output and Y
-        #
-        #       BACKWARD PASS AND MODEL UPDATE:
-        #       optimizer.zero_grad()
-        #       loss.backward()
-        #       optimizer.step()
-
-        print(f'Saving to {args.output_dir}.')
-        #self.model.save_pretrained(args.output_dir)
-
-t50 = time.time()
-config = A1RNNModelConfig(vocab_size=max(vocabulary.values()) + 1, embedding_size=200, hidden_size=300)
-model = A1RNNModel(config)
 
 
-args = TrainingArguments(
-    learning_rate=0.003,
-    num_train_epochs=25,
-    per_device_eval_batch_size=32,
-    per_device_train_batch_size=32,
-    output_dir='Assignment2'
+###
+### Part 5. Data loading, pretokenization and training entry point
+###
+
+TRAIN_FILE = "/data/courses/2025_dat450_dit247/assignments/a1/train.txt"
+VAL_FILE   = "/data/courses/2025_dat450_dit247/assignments/a1/val.txt"
+
+# Build vocabulary once at import time
+vocabulary, inverse_vocabulary = build_tokenizer(
+    TRAIN_FILE,
+    max_voc_size=10000,
 )
 
-dataset = load_dataset('text', data_files={'train': "/data/courses/2025_dat450_dit247/assignments/a1/train.txt", 'val': "/data/courses/2025_dat450_dit247/assignments/a1/val.txt"})
-dataset = dataset.filter(lambda x: x['text'].strip() != '')
-
-
-"""
-for sec in ['train', 'val']:
-    dataset[sec] = Subset(dataset[sec], range(100000))
-"""
+# Tokenizer instance (max_length used for truncation/padding)
 tokenizer = A1Tokenizer(vocabulary, max_length=200)
 
 
 def pretokenize_dataset(dataset, tokenizer):
+    """
+    Convert HF text dataset into a list of dicts:
+        {"input_ids": 1D LongTensor}
+    We do truncation+padding here so DataLoader can stack them directly.
+    """
     pretokenized = []
     for item in dataset:
-        enc = tokenizer([item['text']], truncation=True, padding=True, return_tensors='pt')
-        pretokenized.append({'input_ids': enc['input_ids'][0]}) 
+        enc = tokenizer(
+            [item["text"]],
+            truncation=True,
+            padding=True,
+            return_tensors="pt",
+        )
+        # enc['input_ids']: (1, T) -> take first row
+        pretokenized.append({"input_ids": enc["input_ids"][0]})
     return pretokenized
 
-train_data = pretokenize_dataset(dataset['train'], tokenizer)
-val_data = pretokenize_dataset(dataset['val'], tokenizer)
-
-
-trainer = A1Trainer(
-    model=model,
-    args=args,
-    train_dataset=train_data,
-    eval_dataset=val_data,
-    tokenizer=tokenizer
-)
 
 if __name__ == "__main__":
+    t0 = time.time()
+
+    # Load text dataset
+    dataset = load_dataset(
+        "text",
+        data_files={
+            "train": TRAIN_FILE,
+            "val": VAL_FILE,
+        },
+    )
+
+    # Remove empty lines
+    dataset = dataset.filter(lambda x: x["text"].strip() != "")
+
+    # Optional: subsample for quick debugging
+    # from torch.utils.data import Subset
+    # for sec in ["train", "val"]:
+    #     dataset[sec] = Subset(dataset[sec], range(10000))
+
+    # Pretokenize
+    train_data = pretokenize_dataset(dataset["train"], tokenizer)
+    val_data = pretokenize_dataset(dataset["val"], tokenizer)
+
+    # Define model config and model
+    config = A1RNNModelConfig(
+        vocab_size=max(vocabulary.values()) + 1,
+        embedding_size=200,
+        hidden_size=300,
+    )
+    model = A1RNNModel(config)
+
+    # Training arguments
+    args = TrainingArguments(
+        learning_rate=0.001,
+        num_train_epochs=20,
+        per_device_train_batch_size=32,
+        per_device_eval_batch_size=32,
+        output_dir="Ass1Model",
+    )
+
+    # Trainer
+    trainer = A1Trainer(
+        model=model,
+        args=args,
+        train_dataset=train_data,
+        eval_dataset=val_data,
+        tokenizer=tokenizer,
+    )
+
+    # Train
     trainer.train()
-    t51 = time.time() - t50                        
-    print(f"tot_time except voc = {t51:.2f}s")
+
+    total_time = time.time() - t0
+    print(f"Total training time (excluding vocab building): {total_time:.2f}s")
