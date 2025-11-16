@@ -27,10 +27,16 @@ class A2MLP(nn.Module):
     def __init__(self, config):
         super().__init__()
         assert(config.hidden_act == 'silu')
-        # TODO: initalize components here
+        self.hidden_size = config.hidden_size
+        self.intermediate_size = config.intermediate_size
+        self.fc_in = nn.Linear(self.hidden_size, 2 * self.intermediate_size, bias=False) #handles the split shown in the diagram by projecting to 2x intermediate size
+        self.fc_out = nn.Linear(self.intermediate_size, self.hidden_size, bias=False)
+        self.act = nn.SiLU()
 
     def forward(self, hidden_states):
-        ...
+        x = self.fc_in(hidden_states)
+        x1, x2 = x.chunk(2, dim=-1)
+        return self.fc_out(self.act(x1) * x2) #handles the element-wise multiplication shown in the diagram
 
 # This is optional, since you can use PyTorch's RMSNorm.
 class A2RMSNorm(nn.Module):
