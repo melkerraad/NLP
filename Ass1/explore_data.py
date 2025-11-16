@@ -59,3 +59,5 @@ print("  Mean:", np.mean(lengths))
 print("  Median:", np.median(lengths))
 print("  95th percentile:", np.percentile(lengths, 95))
 print("  Max:", np.max(lengths))
+
+print(len(word_counter), "This is the total size of the vocabulary")

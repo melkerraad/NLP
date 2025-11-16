@@ -1,0 +1,12 @@
+Loaded model on: cuda
+Validation loss: 3.9965
+Perplexity:      54.41
+
+Example text: To make a good pasta, you can use many types of
+
+Top-5 next word predictions:
+1. <UNK>       (prob: 0.8984)
+2. the         (prob: 0.0321)
+3. music       (prob: 0.0238)
+4. software    (prob: 0.0229)
+5. data        (prob: 0.0229)

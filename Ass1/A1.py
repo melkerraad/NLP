@@ -17,7 +17,8 @@ import nltk
 os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 sys.modules["scipy"] = None  # workaround for HF/datasets on some systems
 
-
+# Activate environment:
+# source /data/courses/2025_dat450_dit247/venvs/dat450_venv/bin/activate
 ###
 ### Part 1. Tokenization & Vocabulary
 ###

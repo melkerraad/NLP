@@ -1,9 +1,0 @@
-Validation Loss: 4.936356093827339
-Perplexity: 139.2618666971306
-
-Next-word predictions for: 'My favorite car is a'
-1. <UNK>  (prob: 0.3687)
-2. drugs  (prob: 0.2507)
-3. chocolate  (prob: 0.1887)
-4. adhesives  (prob: 0.1227)
-5. cacao  (prob: 0.0693)

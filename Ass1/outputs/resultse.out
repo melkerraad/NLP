@@ -1,0 +1,12 @@
+Loaded model on: cuda
+Validation loss: 3.9965
+Perplexity:      54.41
+
+Example text: The cat sat on the mat. The
+
+Top-5 next word predictions:
+1. <UNK>       (prob: 0.8197)
+2. first       (prob: 0.0784)
+3. ``          (prob: 0.0366)
+4. two         (prob: 0.0358)
+5. most        (prob: 0.0295)

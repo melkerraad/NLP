@@ -1,9 +1,0 @@
-Validation Loss: 4.052638970797296
-Perplexity: 57.54912729708922
-
-Next-word predictions for: 'The cat sat on the mat. The'
-1. .  (prob: 0.4849)
-2. <UNK>  (prob: 0.1855)
-3. ,  (prob: 0.1601)
-4. (  (prob: 0.1010)
-5. <EOS>  (prob: 0.0686)
