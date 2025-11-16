@@ -43,12 +43,11 @@ class A2RMSNorm(nn.Module):
     """RMS layer normalization."""
     def __init__(self, config):
         super().__init__()
-        # TODO: Use config.rms_norm_eps
-        # TODO: initalize weights here
+        eps = getattr(config, "rms_norm_eps", 1e-5) #uses config.rms_norm_eps if it exists, else defaults to 1e-5
+        self.norm = nn.RMSNorm(normalized_shape=config.hidden_size, eps=eps, elementwise_affine=True) #Uses PyTorch's RMSNorm (initializes weights internally)
 
     def forward(self, hidden_states):
-        ...
-
+        return self.norm(hidden_states)
 
 class A2Attention(nn.Module):
     """The multi-head attention layer of the Transformer. Uses standard scaled dot-product attention with causal masking."""
