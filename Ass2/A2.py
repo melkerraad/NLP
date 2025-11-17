@@ -100,10 +100,20 @@ class A2DecoderLayer(nn.Module):
     """A complete Transformer decoder layer."""
     def __init__(self, config):
         super().__init__()
-        # TODO: set up attention, MLP, and normalizers here.
+        self.attention = A2Attention(config)
+        self.mlp = A2MLP(config)
+        self.attn_norm = A2RMSNorm(config)
+        self.mlp_norm = A2RMSNorm(config)
 
     def forward(self, hidden_states, rope_rotations):
-        ...
+        attn_out = self.attention(hidden_states, rope_rotations) #Apply attention
+        attn_out = self.attn_norm(attn_out) #Normalize attention output
+        hidden_states = hidden_states + attn_out #Add residual connection
+
+        mlp_out = self.mlp(hidden_states) #Apply MLP
+        mlp_out = self.mlp_norm(mlp_out) #Normalize MLP output
+        hidden_states = hidden_states + mlp_out #Add residual connection
+        return hidden_states
 
 
 class A2Transformer(PreTrainedModel):
