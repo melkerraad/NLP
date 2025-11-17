@@ -37,21 +37,7 @@ print("Loaded model on:", device)
 
 
 def sample_text(model, tokenizer, prompt, max_length=50, temperature=1.0, topk=0, device=None):
-    """Generate text autoregressively from `model` using temperature + top-k sampling.
 
-    Args:
-        model: PyTorch model mapping input_ids -> logits (B, T, V).
-        tokenizer: A1Tokenizer instance (provides conversion and special ids).
-        prompt: str initial prompt.
-        max_length: maximum number of tokens to generate (not counting prompt tokens).
-        temperature: float > 0.  Values <1 make distribution sharper; 0 treated as greedy.
-        topk: int. If >0, restrict sampling to top-k tokens.
-        device: torch.device or None. If None, model.device is used.
-
-    Returns:
-        generated_text: str of tokens joined with spaces (special tokens removed).
-        token_ids: list of token ids (including prompt and generated tokens).
-    """
     if device is None:
         device = next(model.parameters()).device
 
@@ -61,7 +47,8 @@ def sample_text(model, tokenizer, prompt, max_length=50, temperature=1.0, topk=0
 
     eos_id = tokenizer.eos_token_id
 
-    generated = []
+    # remember how many tokens were in the prompt so we can return only the generated continuation
+    prompt_len = input_ids.size(1)
 
     for step in range(max_length):
         # forward pass
@@ -86,30 +73,57 @@ def sample_text(model, tokenizer, prompt, max_length=50, temperature=1.0, topk=0
                 distr = Categorical(logits=scaled_logits)
                 next_id = int(distr.sample().cpu().item())
 
-        # append token
-        generated.append(next_id)
-
         # expand input_ids by one token
         input_ids = torch.cat([input_ids, torch.tensor([[next_id]], device=device)], dim=1)
 
         if next_id == eos_id:
             break
 
-    # Build text from token ids (map via inverse_vocabulary)
-    # Drop pad/bos/eos tokens
+    # Build prompt token list and generated token list separately
     all_ids = input_ids[0].tolist()
-    toks = []
-    for tid in all_ids:
-        if tid == tokenizer.pad_token_id:
-            continue
-        if tid == tokenizer.bos_token_id:
-            continue
-        if tid == tokenizer.eos_token_id:
-            break
-        toks.append(inverse_vocabulary.get(tid, "<UNK>"))
+    prompt_ids = all_ids[:prompt_len]
+    gen_ids = all_ids[prompt_len:]
 
-    generated_text = " ".join(toks)
-    return generated_text, all_ids
+    def ids_to_tokens(ids):
+        toks_local = []
+        for tid in ids:
+            if tid == tokenizer.pad_token_id:
+                continue
+            if tid == tokenizer.bos_token_id:
+                continue
+            if tid == tokenizer.eos_token_id:
+                break
+            toks_local.append(inverse_vocabulary.get(tid, "<UNK>"))
+        return toks_local
+
+    prompt_tokens = ids_to_tokens(prompt_ids)
+    gen_tokens = ids_to_tokens(gen_ids)
+
+    # Return token lists: prompt tokens and generated continuation tokens
+    return prompt_tokens, gen_tokens, all_ids
+
+
+def detokenize(tokens):
+    """Simple detokenizer that attaches punctuation and contractions without a space.
+
+    This is a lightweight heuristic useful for the course tokenizer output
+    (which splits punctuation and contractions into separate tokens).
+    """
+    no_space_before = {",", ".", "?", "!", ";", ":", "%", ")", "]", "}"}
+    contractions = {"n't", "'s", "'re", "'ve", "'ll", "'d"}
+    no_space_after = {"(", "[", "{"}
+
+    out = ""
+    for tok in tokens:
+        if out == "":
+            out = tok
+        elif tok in no_space_before or tok in contractions:
+            out = out + tok
+        elif out and out[-1] in no_space_after:
+            out = out + tok
+        else:
+            out = out + " " + tok
+    return out
 
 
 
@@ -203,12 +217,13 @@ for rank, (idx, prob) in enumerate(zip(indices, probs), start=1):
     word = inverse_vocabulary.get(idx, "<UNK>")
     print(f"{rank}. {word:12s}  (prob: {prob:.4f})")
 
-
-### Generation examples using sampling function
 examples = [
     "In natural language processing, a Transformer",
     "Is Stockholm the capital of Sweden? Answer yes or no. The answer is",
-    "Write a Python program that reverses a list."
+    "Write a Python program that reverses a list.",
+    "To be or not to be, that is",
+    "Oscar Piastri is a",
+    "Women are so much worse than the jews, when it comes to"
 ]
 
 print("\n--- Sampling examples ---")
@@ -216,5 +231,8 @@ for prompt in examples:
     print(f"\nPrompt: {prompt}")
     # try a few settings
     for temp, k in [(0.0, 0), (0.7, 40), (1.0, 40)]:
-        txt, ids = sample_text(model, tokenizer, prompt, max_length=50, temperature=temp, topk=k, device=device)
-        print(f" temp={temp:0.2f}, topk={k}: {txt[:300]}")
+        prompt_toks, gen_toks, all_ids = sample_text(model, tokenizer, prompt, max_length=50, temperature=temp, topk=k, device=device)
+        prompt_text = detokenize(prompt_toks)
+        gen_text = detokenize(gen_toks)
+        print(f" temp={temp:0.2f}, topk={k} | prompt: {prompt_text}")
+        print(f"               continuation: {gen_text[:300]}")
