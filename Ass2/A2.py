@@ -125,8 +125,14 @@ class A2Transformer(PreTrainedModel):
         super().__init__(config)
 
         self.rotary_emb = A2RotaryEmbedding(config)
-        # TODO: Set up the other components here.
-        # TODO: put all transformer decoder layers in a ModuleList.
+        
+        self.embed = nn.Embedding(config.vocab_size, config.hidden_size) # Embedding layer
+
+        self.layers = nn.ModuleList([A2DecoderLayer(config) for _ in range(config.num_hidden_layers)]) # Transformer decoder layers stored in a ModuleList
+
+        # Top-level normalization and unembedding 
+        self.final_norm = A2RMSNorm(config)
+        self.unembed = nn.Linear(config.hidden_size, config.vocab_size, bias=False) #no bias on unembed
 
         # This line should be called after you have set up all components.
         self.post_init()
@@ -135,8 +141,17 @@ class A2Transformer(PreTrainedModel):
     def forward(self, input_ids):
         rope_rotations = self.rotary_emb(input_ids) # pass this to all the transformer decoder layers
 
-        # TODO: Call embedding, transformer decoder layers, last normalizer, and unembedding.
-        ...
+        # embedding
+        x = self.embed(input_ids)  # (B, M, D)
+
+        # pass through transformer decoder layers
+        for layer in self.layers:
+            x = layer(x, rope_rotations)
+
+        # final normalization and unembedding
+        x = self.final_norm(x)
+        logits = self.unembed(x)  # (B, M, vocab_size)
+        return logits
 
 
 #### RoPE implementation (copied and simplified from HuggingFace). ####
