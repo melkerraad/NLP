@@ -54,11 +54,46 @@ class A2Attention(nn.Module):
     
     def __init__(self, config):
         super().__init__()
-        # TODO: set up W_q, W_k, W_v, W_o here
-        # TODO: set up normalizers here
+        D = config.hidden_size
+        self.n_heads = config.num_attention_heads
+        assert D % self.n_heads == 0, "hidden_size must be divisible by the number of attention heads"
+        self.head_dim = D // self.n_heads
+
+        # linear projections
+        self.W_q = nn.Linear(D, D, bias=False)
+        self.W_k = nn.Linear(D, D, bias=False)
+        self.W_v = nn.Linear(D, D, bias=False)
+        self.W_o = nn.Linear(D, D, bias=False)
+        # normalizers
+        self.q_norm = A2RMSNorm(config)
+        self.k_norm = A2RMSNorm(config)
 
     def forward(self, hidden_states, rope_rotations):
-        ...
+        # hidden_states: (B, M, D)
+        b, m, d = hidden_states.size()
+
+        q = self.W_q(hidden_states)
+        k = self.W_k(hidden_states)
+        v = self.W_v(hidden_states)
+
+        # normalizers (A2RMSNorm after q and k)
+        q = self.q_norm(q)
+        k = self.k_norm(k)
+
+        # reshape to (B, n_heads, M, head_dim)
+        q = q.view(b, m, self.n_heads, self.head_dim).transpose(1, 2)
+        k = k.view(b, m, self.n_heads, self.head_dim).transpose(1, 2)
+        v = v.view(b, m, self.n_heads, self.head_dim).transpose(1, 2)
+
+        # apply RoPE rotations
+        q, k = apply_rotary_pos_emb(q, k, rope_rotations)
+
+        # scaled dot-product attention
+        attn_out = torch.nn.functional.scaled_dot_product_attention(q, k, v, is_causal=True)
+
+        # combine heads: (B, n_heads, M, head_dim) -> (B, M, D)
+        attn_out = attn_out.transpose(1, 2).reshape(b, m, d)
+        return self.W_o(attn_out)
 
 
 class A2DecoderLayer(nn.Module):
