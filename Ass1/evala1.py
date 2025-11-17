@@ -13,7 +13,7 @@ from A1 import pretokenize_dataset  # uses same tokenizer logic
 tokenizer = A1Tokenizer(vocabulary, max_length=200)
 
 # Loads the model saved by A1Trainer
-model = A1RNNModel.from_pretrained("Ass1Model")
+model = A1RNNModel.from_pretrained("Ass1ModelAdv")
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
 model.eval()
@@ -83,7 +83,7 @@ print(f"Perplexity:      {ppl:.2f}")
 ### Next-word prediction example
 ###
 
-example_text = "The color of the sea is"
+example_text = "The cat sat on the"
 print("\nExample text:", example_text)
 
 # tokenize (padding=True just makes shape consistent)
