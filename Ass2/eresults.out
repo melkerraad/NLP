@@ -1,0 +1,29 @@
+Loaded model on: cuda
+Validation loss: 4.5335
+Perplexity:      93.08
+
+Example text: The grass is green, the sky is blue, the apple is
+
+Top-5 next word predictions:
+1. blue          (prob: 0.5048)
+2. grey          (prob: 0.1391)
+3. pale          (prob: 0.1238)
+4. red           (prob: 0.1226)
+5. black         (prob: 0.1097)
+
+--- Sampling examples ---
+
+Prompt: In natural language processing, a Transformer
+ temp=0.00, topk=0: in natural language processing , a <UNK>
+ temp=0.70, topk=40: in natural language processing , a <UNK>
+ temp=1.00, topk=40: in natural language processing , a <UNK>
+
+Prompt: Is Stockholm the capital of Sweden? Answer yes or no. The answer is
+ temp=0.00, topk=0: is stockholm the capital of sweden ? answer yes or no . the answer is
+ temp=0.70, topk=40: is stockholm the capital of sweden ? answer yes or no . the answer is
+ temp=1.00, topk=40: is stockholm the capital of sweden ? answer yes or no . the answer is
+
+Prompt: Write a Python program that reverses a list.
+ temp=0.00, topk=0: write a python program that reverses a list .
+ temp=0.70, topk=40: write a python program that reverses a list .
+ temp=1.00, topk=40: write a python program that reverses a list .
