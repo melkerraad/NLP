@@ -1,0 +1,86 @@
+Loaded model on: cuda
+
+Example text: The grass is green, the sky is blue, the apple is
+
+Top-5 next word predictions:
+1.  is           (prob: 0.8243)
+2.  tree         (prob: 0.1196)
+3.  trees        (prob: 0.0223)
+4.  on           (prob: 0.0170)
+5.  tastes       (prob: 0.0168)
+
+--- Sampling examples ---
+
+Prompt: In natural language processing, a Transformer
+ temp=0.00, topk=0 | prompt: In natural language processing, a Transformer
+               continuation: is a type of neural network architecture that is used for natural language processing tasks. It was developed by Google Brain researchers in 2017 and has since become one of the most popular architectures for NLP tasks. The Transformer is a self-attention mechanism
+ temp=0.70, topk=10 | prompt: In natural language processing, a Transformer
+               continuation: is also known as a self-attention layer (SAL), which is a type of neural network model for natural language processing. The model is based on the attention mechanism, which can be used to solve the problem of information sharing between different parts of
+ temp=0.70, topk=40 | prompt: In natural language processing, a Transformer
+               continuation: is a type of neural network used by Google’s search and speech assistant products called BERT and T5. It is a type of language model that uses a series of transformations of the input to produce the output. The transformation of the input can be
+ temp=1.00, topk=60 | prompt: In natural language processing, a Transformer
+               continuation: uses an attention mechanism that lets it focus on specific elements of a sequence of words when trying to understand or classify a document. In contrast, CNNs focus on contextual information, such as the neighboring words, while GPT works on input that is partially
+
+Prompt: Is Stockholm the capital of Sweden? Answer yes or no. The answer is
+ temp=0.00, topk=0 | prompt: Is Stockholm the capital of Sweden? Answer yes or no. The answer is
+               continuation: yes.
+ temp=0.70, topk=10 | prompt: Is Stockholm the capital of Sweden? Answer yes or no. The answer is
+               continuation: no.
+
+Does Stockholm have a beach? Answer yes or no. The answer is no.
+
+Is Stockholm a good place to visit? Answer yes or no. The answer is no.
+
+Is Stockholm a good place to live? Answer yes or no. The
+ temp=0.70, topk=40 | prompt: Is Stockholm the capital of Sweden? Answer yes or no. The answer is
+               continuation: no.
+ temp=1.00, topk=60 | prompt: Is Stockholm the capital of Sweden? Answer yes or no. The answer is
+               continuation: no and they are trying to decide on a different arrangement. They have looked at an idea proposed by Finland.
+
+The Stockholm Plan is the name the government has given to its latest proposal as it is looking to change the way the capital is used. There
+
+Prompt: Write a Python program that reverses a list.
+ temp=0.00, topk=0 | prompt: Write a Python program that reverses a list.
+               continuation: The list should be reversed in place, so that the original list is unchanged. For example, given the list [1, 2, 3], the output should be [3, 2, 1]. The list should be reversed in
+ temp=0.70, topk=10 | prompt: Write a Python program that reverses a list.
+               continuation: The program should take one argument, which is the name of the list to reverse. The output should be the same list with the elements in the reverse order. For example, the input list [1,2,3,4,5] should
+ temp=0.70, topk=40 | prompt: Write a Python program that reverses a list.
+               continuation: The program should take as input a string with a list of items. For each item, reverse the list. The output should be a single string. The list items should be separated by a comma. The program should then concatenate together the reversed lists to
+ temp=1.00, topk=60 | prompt: Write a Python program that reverses a list.
+               continuation: The given list is reversed from front to end. It also returns to a user what he/she input.
+Input:- ['1111', '222', '4231', '1231', '132', '111', '133', '221',
+
+Prompt: To be or not to be, that is
+ temp=0.00, topk=0 | prompt: To be or not to be, that is
+               continuation: the question: whether it is nobler in the mind to suffer the slings and arrows of outrageous fortune, or to take arms against a sea of troubles, and by opposing end them. To be or not to be, that is the question:
+ temp=0.70, topk=10 | prompt: To be or not to be, that is
+               continuation: the question: whether it is nobler in the mind to suffer the slings and arrows of outrageous fortune, or to take arms against a sea of troubles, and by opposing end them. (Shakespeare, Hamlet, Act 1, Sc
+ temp=0.70, topk=40 | prompt: To be or not to be, that is
+               continuation: the question. The famous line comes from Hamlet, but its meaning is more complex than that. The question is whether or not it is better to be or not to be. In other words, is it better to be alive? Or, is
+ temp=1.00, topk=60 | prompt: To be or not to be, that is
+               continuation: the question
+Whether it is in a man to leave or stay
+Whether we go, on, or go back
+Whether we remain put and stay put
+Whether we break the shackles, or stay shackled
+Whether we be brave or scared
+
+Prompt: Oscar Piastri is a
+ temp=0.00, topk=0 | prompt: Oscar Piastri is a
+               continuation: 2009 film directed by David O. Russell. It stars Mark Ruffalo, Jennifer Connelly, and Paul Giamatti. The film is based on the 2006 novel "The Fighter" by Daniel Almond. The film was
+ temp=0.70, topk=10 | prompt: Oscar Piastri is a
+               continuation: Polish film director, director of film and television. He was born on October 5, 1951 in Łódź, Poland. He graduated from the National Film School in Łódź with a degree in film directing. He made
+ temp=0.70, topk=40 | prompt: Oscar Piastri is a
+               continuation: Russian politician who has been serving as a member of the Federal Assembly for the Russian Federation since 2014. He is a deputy of the 6th, 7th, 8th, 9th and 10th convocations of
+ temp=1.00, topk=60 | prompt: Oscar Piastri is a
+               continuation: former American football wide receiver and player/coach who played college football at Northwestern and in the NFL.
+
+Prompt: A good career choice for graduate software engineers is
+ temp=0.00, topk=0 | prompt: A good career choice for graduate software engineers is
+               continuation: to work for a company that has a good reputation for providing a good work environment. The company should have a good reputation for providing a good work environment because it is important for a software engineer to be able to work in a good environment. The company
+ temp=0.70, topk=10 | prompt: A good career choice for graduate software engineers is
+               continuation: to work for a software house or an organization that produces applications for the market. If you have a background in computer science and programming and you want to work in the industry, you can get a job as a software engineer. You can start as an
+ temp=0.70, topk=40 | prompt: A good career choice for graduate software engineers is
+               continuation: the field of medical informatics. This type of engineer is required to work in a hospital, medical center, or other healthcare organization. He or she designs, develops, designs, and performs software that facilitates the processing of medical data.
+ temp=1.00, topk=60 | prompt: A good career choice for graduate software engineers is
+               continuation: System Software. This type of software includes operating systems, programming languages, compilers, and debugging tools. There are numerous programming languages in this category, including C, C++, Java, and SQL. Many of these programs also require the use of compilers,
