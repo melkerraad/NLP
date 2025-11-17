@@ -6,4 +6,5 @@
 #SBATCH -e Ass2/small_train.err
 #SBATCH -p short
 
-python3 run_small_train.py
+cd /data/users/melkerr/NLP
+python3 -m Ass2.run_small_train
