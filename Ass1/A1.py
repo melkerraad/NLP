@@ -211,10 +211,10 @@ class A1RNNModel(PreTrainedModel):
             hidden_size=config.hidden_size,
             num_layers=2,
             batch_first=True,
-            dropout=0.1,
+            dropout=0.2,
         )
 
-        self.dropout = nn.Dropout(0.2)
+        self.dropout = nn.Dropout(0.3)
 
         self.unembedding = nn.Linear(
             in_features=config.hidden_size,
@@ -253,7 +253,7 @@ class TrainingArguments:
     num_train_epochs: int = 20
     per_device_train_batch_size: int = 32
     per_device_eval_batch_size: int = 32
-    output_dir: str = "Ass1Model"  # used by save_pretrained
+    output_dir: str = "Ass1ModelAdv"  # used by save_pretrained
 
 
 class A1Trainer:
@@ -387,7 +387,7 @@ VAL_FILE   = "/data/courses/2025_dat450_dit247/assignments/a1/val.txt"
 # Build vocabulary once at import time
 vocabulary, inverse_vocabulary = build_tokenizer(
     TRAIN_FILE,
-    max_voc_size=10000,
+    max_voc_size=20000,
 )
 
 # Tokenizer instance (max_length used for truncation/padding)
@@ -440,18 +440,18 @@ if __name__ == "__main__":
     # Define model config and model
     config = A1RNNModelConfig(
         vocab_size=max(vocabulary.values()) + 1,
-        embedding_size=200,
-        hidden_size=300,
+        embedding_size=256,
+        hidden_size=384,
     )
     model = A1RNNModel(config)
 
     # Training arguments
     args = TrainingArguments(
-        learning_rate=0.001,
+        learning_rate=0.0008,
         num_train_epochs=20,
         per_device_train_batch_size=32,
         per_device_eval_batch_size=32,
-        output_dir="Ass1Model",
+        output_dir="Ass1ModelAdv",
     )
 
     # Trainer

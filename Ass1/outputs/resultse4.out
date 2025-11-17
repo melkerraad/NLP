@@ -1,12 +1,12 @@
 Loaded model on: cuda
-Validation loss: 3.9965
-Perplexity:      54.41
+Validation loss: 4.2657
+Perplexity:      71.21
 
-Example text: The color of the sea is
+Example text: The cat sat on the
 
 Top-5 next word predictions:
-1. a           (prob: 0.2906)
-2. <UNK>       (prob: 0.2690)
-3. the         (prob: 0.2320)
-4. called      (prob: 0.1171)
-5. usually     (prob: 0.0913)
+1. <UNK>       (prob: 0.7061)
+2. left        (prob: 0.1042)
+3. front       (prob: 0.0872)
+4. ``          (prob: 0.0566)
+5. surface     (prob: 0.0459)
