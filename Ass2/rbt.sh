@@ -4,7 +4,7 @@
 #SBATCH --mem=64G
 #SBATCH -o big_output/big_train.out
 #SBATCH -e big_output/big_train.err
-#SBATCH -p short
+#SBATCH -p long
 
 cd /data/users/melkerr/NLP
 python3 -m Ass2.run_big_train
