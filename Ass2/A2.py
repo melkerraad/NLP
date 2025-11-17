@@ -1,0 +1,202 @@
+
+import torch
+from torch import nn
+from transformers import PreTrainedModel, PretrainedConfig
+
+
+class A2ModelConfig(PretrainedConfig):
+    """Configuration object that stores hyperparameters that define the Transformer language model."""
+    def __init__(self, vocab_size=None, hidden_size=None, intermediate_size=None, num_attention_heads=None, 
+                 num_hidden_layers=None,
+                 rope_theta=None, hidden_act='silu', max_position_embeddings=None, rms_norm_eps=None, **kwargs):
+        super().__init__(**kwargs)
+        self.vocab_size = vocab_size
+        self.hidden_size = hidden_size
+        self.max_position_embeddings = max_position_embeddings
+        self.rms_norm_eps = rms_norm_eps
+        self.num_attention_heads = num_attention_heads
+        self.rope_theta = rope_theta
+        self.hidden_act = hidden_act
+        self.intermediate_size = intermediate_size
+        self.num_hidden_layers = num_hidden_layers
+
+
+
+class A2MLP(nn.Module):
+    """The MLP layer of the Transformer. Uses the SwiGLU architecture."""
+    def __init__(self, config):
+        super().__init__()
+        assert(config.hidden_act == 'silu')
+        self.hidden_size = config.hidden_size
+        self.intermediate_size = config.intermediate_size
+        self.fc_in = nn.Linear(self.hidden_size, 2 * self.intermediate_size, bias=False) #handles the split shown in the diagram by projecting to 2x intermediate size
+        self.fc_out = nn.Linear(self.intermediate_size, self.hidden_size, bias=False)
+        self.act = nn.SiLU()
+
+    def forward(self, hidden_states):
+        x = self.fc_in(hidden_states)
+        x1, x2 = x.chunk(2, dim=-1)
+        return self.fc_out(self.act(x1) * x2) #handles the element-wise multiplication shown in the diagram
+
+# This is optional, since you can use PyTorch's RMSNorm.
+class A2RMSNorm(nn.Module):
+    """RMS layer normalization."""
+    def __init__(self, config):
+        super().__init__()
+        eps = getattr(config, "rms_norm_eps", 1e-5) #uses config.rms_norm_eps if it exists, else defaults to 1e-5
+        self.norm = nn.RMSNorm(normalized_shape=config.hidden_size, eps=eps, elementwise_affine=True) #Uses PyTorch's RMSNorm (initializes weights internally)
+
+    def forward(self, hidden_states):
+        return self.norm(hidden_states)
+
+class A2Attention(nn.Module):
+    """The multi-head attention layer of the Transformer. Uses standard scaled dot-product attention with causal masking."""
+    
+    def __init__(self, config):
+        super().__init__()
+        D = config.hidden_size
+        self.n_heads = config.num_attention_heads
+        assert D % self.n_heads == 0, "hidden_size must be divisible by the number of attention heads"
+        self.head_dim = D // self.n_heads
+
+        # linear projections
+        self.W_q = nn.Linear(D, D, bias=False)
+        self.W_k = nn.Linear(D, D, bias=False)
+        self.W_v = nn.Linear(D, D, bias=False)
+        self.W_o = nn.Linear(D, D, bias=False)
+        # normalizers
+        self.q_norm = A2RMSNorm(config)
+        self.k_norm = A2RMSNorm(config)
+
+    def forward(self, hidden_states, rope_rotations):
+        # hidden_states: (B, M, D)
+        b, m, d = hidden_states.size()
+
+        q = self.W_q(hidden_states)
+        k = self.W_k(hidden_states)
+        v = self.W_v(hidden_states)
+
+        # normalizers (A2RMSNorm after q and k)
+        q = self.q_norm(q)
+        k = self.k_norm(k)
+
+        # reshape to (B, n_heads, M, head_dim)
+        q = q.view(b, m, self.n_heads, self.head_dim).transpose(1, 2)
+        k = k.view(b, m, self.n_heads, self.head_dim).transpose(1, 2)
+        v = v.view(b, m, self.n_heads, self.head_dim).transpose(1, 2)
+
+        # apply RoPE rotations
+        q, k = apply_rotary_pos_emb(q, k, rope_rotations)
+
+        # scaled dot-product attention
+        attn_out = torch.nn.functional.scaled_dot_product_attention(q, k, v, is_causal=True)
+
+        # combine heads: (B, n_heads, M, head_dim) -> (B, M, D)
+        attn_out = attn_out.transpose(1, 2).reshape(b, m, d)
+        return self.W_o(attn_out)
+
+
+class A2DecoderLayer(nn.Module):
+    """A complete Transformer decoder layer."""
+    def __init__(self, config):
+        super().__init__()
+        self.attention = A2Attention(config)
+        self.mlp = A2MLP(config)
+        self.attn_norm = A2RMSNorm(config)
+        self.mlp_norm = A2RMSNorm(config)
+
+    def forward(self, hidden_states, rope_rotations):
+        attn_out = self.attention(hidden_states, rope_rotations) #Apply attention
+        attn_out = self.attn_norm(attn_out) #Normalize attention output
+        hidden_states = hidden_states + attn_out #Add residual connection
+
+        mlp_out = self.mlp(hidden_states) #Apply MLP
+        mlp_out = self.mlp_norm(mlp_out) #Normalize MLP output
+        hidden_states = hidden_states + mlp_out #Add residual connection
+        return hidden_states
+
+
+class A2Transformer(PreTrainedModel):
+    """A language model based on the Transformer architecture."""
+    
+    config_class = A2ModelConfig
+
+    def __init__(self, config):
+        super().__init__(config)
+
+        self.rotary_emb = A2RotaryEmbedding(config)
+        
+        self.embed = nn.Embedding(config.vocab_size, config.hidden_size) # Embedding layer
+
+        self.layers = nn.ModuleList([A2DecoderLayer(config) for _ in range(config.num_hidden_layers)]) # Transformer decoder layers stored in a ModuleList
+
+        # Top-level normalization and unembedding 
+        self.final_norm = A2RMSNorm(config)
+        self.unembed = nn.Linear(config.hidden_size, config.vocab_size, bias=False) #no bias on unembed
+
+        # This line should be called after you have set up all components.
+        self.post_init()
+
+
+    def forward(self, input_ids):
+        rope_rotations = self.rotary_emb(input_ids) # pass this to all the transformer decoder layers
+
+        # embedding
+        x = self.embed(input_ids)  # (B, M, D)
+
+        # pass through transformer decoder layers
+        for layer in self.layers:
+            x = layer(x, rope_rotations)
+
+        # final normalization and unembedding
+        x = self.final_norm(x)
+        logits = self.unembed(x)  # (B, M, vocab_size)
+        return logits
+
+
+#### RoPE implementation (copied and simplified from HuggingFace). ####
+
+def apply_rotary_pos_emb(q, k, rope_rotations, unsqueeze_dim=1):
+    """Applies precomputed RoPE rotations to the query and key representations."""
+    assert(q.shape == k.shape)
+    assert(len(q.shape) == 4)
+    cos, sin = rope_rotations
+    assert(q.shape[2] == cos.shape[1])
+    assert(q.shape[3] == cos.shape[2])    
+    q_type, k_type = q.dtype, k.dtype
+    cos = cos.unsqueeze(unsqueeze_dim)
+    sin = sin.unsqueeze(unsqueeze_dim)
+    q_embed = (q * cos) + (rotate_half(q) * sin)
+    k_embed = (k * cos) + (rotate_half(k) * sin)
+    return q_embed.to(q_type), k_embed.to(k_type)
+
+def rotate_half(x):
+    """Rotates half the hidden dims of the input."""
+    x1 = x[..., : x.shape[-1] // 2]
+    x2 = x[..., x.shape[-1] // 2 :]
+    return torch.cat((-x2, x1), dim=-1)
+
+class A2RotaryEmbedding(nn.Module):
+    """RoPE position representation for use in Transformer attention."""
+
+    def __init__(self, config, device=None):
+        super().__init__()
+        rope_theta = config.rope_theta
+        head_dim = config.hidden_size // config.num_attention_heads
+        partial_rotary_factor = 1.0
+        dim = int(head_dim * partial_rotary_factor)
+        self.inv_freq = 1.0 / (rope_theta ** (torch.arange(0, dim, 2, dtype=torch.int64).to(device=device, dtype=torch.float) / dim))
+
+    @torch.no_grad()
+    def forward(self, x):
+        position_ids = torch.arange(0, x.shape[1], device=x.device).unsqueeze(0)
+        inv_freq_expanded = self.inv_freq[None, :, None].float().expand(position_ids.shape[0], -1, 1).to(x.device)
+        position_ids_expanded = position_ids[:, None, :].float()
+
+        device_type = x.device.type if isinstance(x.device.type, str) and x.device.type != "mps" else "cpu"
+        with torch.autocast(device_type=device_type, enabled=False):  # Force float32
+            freqs = (inv_freq_expanded.float() @ position_ids_expanded.float()).transpose(1, 2)
+            emb = torch.cat((freqs, freqs), dim=-1)
+            cos = emb.cos()
+            sin = emb.sin()
+            return cos, sin

@@ -1,0 +1,63 @@
+Using device: cuda
+Epoch 1/20 - Train loss: 5.3780
+  Validation loss: 4.7645 | Perplexity: 117.28
+  Epoch time: 285.37s
+Epoch 2/20 - Train loss: 4.6797
+  Validation loss: 4.4412 | Perplexity: 84.87
+  Epoch time: 286.17s
+Epoch 3/20 - Train loss: 4.4396
+  Validation loss: 4.2941 | Perplexity: 73.27
+  Epoch time: 282.08s
+Epoch 4/20 - Train loss: 4.3148
+  Validation loss: 4.2145 | Perplexity: 67.66
+  Epoch time: 274.58s
+Epoch 5/20 - Train loss: 4.2333
+  Validation loss: 4.1597 | Perplexity: 64.05
+  Epoch time: 274.19s
+Epoch 6/20 - Train loss: 4.1730
+  Validation loss: 4.1228 | Perplexity: 61.73
+  Epoch time: 274.36s
+Epoch 7/20 - Train loss: 4.1260
+  Validation loss: 4.0952 | Perplexity: 60.05
+  Epoch time: 274.48s
+Epoch 8/20 - Train loss: 4.0877
+  Validation loss: 4.0730 | Perplexity: 58.74
+  Epoch time: 274.37s
+Epoch 9/20 - Train loss: 4.0558
+  Validation loss: 4.0561 | Perplexity: 57.75
+  Epoch time: 274.32s
+Epoch 10/20 - Train loss: 4.0286
+  Validation loss: 4.0438 | Perplexity: 57.04
+  Epoch time: 274.34s
+Epoch 11/20 - Train loss: 4.0050
+  Validation loss: 4.0338 | Perplexity: 56.48
+  Epoch time: 274.10s
+Epoch 12/20 - Train loss: 3.9843
+  Validation loss: 4.0225 | Perplexity: 55.84
+  Epoch time: 273.13s
+Epoch 13/20 - Train loss: 3.9656
+  Validation loss: 4.0153 | Perplexity: 55.44
+  Epoch time: 274.00s
+Epoch 14/20 - Train loss: 3.9490
+  Validation loss: 4.0100 | Perplexity: 55.15
+  Epoch time: 273.86s
+Epoch 15/20 - Train loss: 3.9339
+  Validation loss: 4.0062 | Perplexity: 54.94
+  Epoch time: 273.81s
+Epoch 16/20 - Train loss: 3.9204
+  Validation loss: 4.0040 | Perplexity: 54.81
+  Epoch time: 274.04s
+Epoch 17/20 - Train loss: 3.9076
+  Validation loss: 4.0001 | Perplexity: 54.60
+  Epoch time: 274.15s
+Epoch 18/20 - Train loss: 3.8965
+  Validation loss: 3.9992 | Perplexity: 54.55
+  Epoch time: 273.58s
+Epoch 19/20 - Train loss: 3.8855
+  Validation loss: 3.9943 | Perplexity: 54.29
+  Epoch time: 279.48s
+Epoch 20/20 - Train loss: 3.8757
+  Validation loss: 3.9965 | Perplexity: 54.41
+  Epoch time: 281.33s
+Saving model to Ass1Model ...
+Total training time (excluding vocab building): 5585.63s

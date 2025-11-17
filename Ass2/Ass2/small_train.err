@@ -1,0 +1,7 @@
+[nltk_data] Downloading package punkt_tab to
+[nltk_data]     /data/users/melkerr/nltk_data...
+[nltk_data]   Unzipping tokenizers/punkt_tab.zip.
+Generating train split: 0 examples [00:00, ? examples/s]Generating train split: 45571 examples [00:00, 260049.02 examples/s]Generating train split: 93953 examples [00:00, 322477.20 examples/s]Generating train split: 186955 examples [00:00, 387433.32 examples/s]Generating train split: 235511 examples [00:00, 369686.14 examples/s]Generating train split: 283585 examples [00:00, 361688.22 examples/s]Generating train split: 294118 examples [00:00, 311822.81 examples/s]
+Generating val split: 0 examples [00:00, ? examples/s]Generating val split: 35748 examples [00:00, 302590.80 examples/s]
+Filter:   0%|          | 0/294118 [00:00<?, ? examples/s]Filter:  21%|██▏       | 63000/294118 [00:00<00:00, 607597.59 examples/s]Filter:  46%|████▌     | 135000/294118 [00:00<00:00, 669550.00 examples/s]Filter:  71%|███████   | 209000/294118 [00:00<00:00, 692948.63 examples/s]Filter:  96%|█████████▌| 282000/294118 [00:00<00:00, 703805.86 examples/s]Filter: 100%|██████████| 294118/294118 [00:00<00:00, 672708.90 examples/s]
+Filter:   0%|          | 0/35748 [00:00<?, ? examples/s]Filter: 100%|██████████| 35748/35748 [00:00<00:00, 593832.59 examples/s]

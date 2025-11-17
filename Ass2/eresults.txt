@@ -1,0 +1,74 @@
+Loaded model on: cuda
+Validation loss: 4.5335
+Perplexity:      93.08
+
+Example text: The grass is green, the sky is blue, the apple is
+
+Top-5 next word predictions:
+1. blue          (prob: 0.5048)
+2. grey          (prob: 0.1391)
+3. pale          (prob: 0.1238)
+4. red           (prob: 0.1226)
+5. black         (prob: 0.1097)
+
+--- Sampling examples ---
+
+Prompt: In natural language processing, a Transformer
+ temp=0.00, topk=0 | prompt: in natural language processing, a <UNK>
+               continuation: <UNK>, <UNK>, <UNK>, <UNK>, <UNK>, <UNK>, <UNK>, <UNK>, <UNK>, <UNK>, <UNK>, <UNK>, <UNK>, and <UNK>, <UNK>, and <UNK>, <UNK>, and <UNK>, among <UNK>, <UNK>, and <UNK>, among <UNK>,
+ temp=0.70, topk=10 | prompt: in natural language processing, a <UNK>
+               continuation: <UNK>, the <UNK> world chess library, and the <UNK> <UNK>, <UNK>, and logistics expertise.
+ temp=0.70, topk=40 | prompt: in natural language processing, a <UNK>
+               continuation: <UNK>, <UNK>, <UNK>, <UNK>, <UNK> and <UNK> and <UNK>, <UNK>, <UNK>, and <UNK> and <UNK> has also to help in the field theory of <UNK> and <UNK> and <UNK>, <UNK> and performance optimization mathematics and analysis theory and field theory.
+ temp=1.00, topk=60 | prompt: in natural language processing, a <UNK>
+               continuation: <UNK>, and (c compiler) <UNK>,
+
+Prompt: Is Stockholm the capital of Sweden? Answer yes or no. The answer is
+ temp=0.00, topk=0 | prompt: is stockholm the capital of sweden? answer yes or no. the answer is
+               continuation: for the number of <UNK> <UNK> in the field training fund that they valued more involved in the field of study.
+ temp=0.70, topk=10 | prompt: is stockholm the capital of sweden? answer yes or no. the answer is
+               continuation: for the number of new testament <UNK>, and they also for the <UNK> <UNK>.
+ temp=0.70, topk=40 | prompt: is stockholm the capital of sweden? answer yes or no. the answer is
+               continuation: for a large number of modules and their methods for determining the importance and confirms a challenge.
+ temp=1.00, topk=60 | prompt: is stockholm the capital of sweden? answer yes or no. the answer is
+               continuation: for an independent <UNK> <UNK> task force search finds motorcycles that they valued one of these new to handle of any particular valued more helpful product carriers for greater use of another supplier or the <UNK> generation of a reliable user.
+
+Prompt: Write a Python program that reverses a list.
+ temp=0.00, topk=0 | prompt: write a python program that reverses a list.
+               continuation: tool for the <UNK> <UNK> of <UNK>, and the <UNK> <UNK> of <UNK>, <UNK>, and <UNK>.
+ temp=0.70, topk=10 | prompt: write a python program that reverses a list.
+               continuation: tool, and the <UNK> generation goal with a more powerful new <UNK> for improved search valued at more loosely.
+ temp=0.70, topk=40 | prompt: write a python program that reverses a list.
+               continuation: tool for further research into the field goals strategy and <UNK> for improved management of the same task force for improved mastery.
+ temp=1.00, topk=60 | prompt: write a python program that reverses a list.
+               continuation: tool for home office services agent rescue innovation for further projects they have to support for specific needs of 3,000 c sisters at the time that they valued within yourself.
+
+Prompt: To be or not to be, that is
+ temp=0.00, topk=0 | prompt: to be or not to be, that is
+               continuation: <UNK>, <UNK>, <UNK>, <UNK>, <UNK>, <UNK>, <UNK>, <UNK>, <UNK>, <UNK>, <UNK>, <UNK>, <UNK>, <UNK>, and the <UNK> jain and <UNK>, the largest number one, and the largest <UNK> the <UNK>, with <UNK> for
+ temp=0.70, topk=10 | prompt: to be or not to be, that is
+               continuation: <UNK>, <UNK> <UNK>, <UNK>, <UNK>, <UNK>, <UNK>, <UNK>, <UNK>, <UNK>, <UNK>, <UNK>, and the <UNK> foundation <UNK> for a <UNK> mission effectiveness <UNK>, and <UNK>, among and valued under which specialists can not access to the <UNK>
+ temp=0.70, topk=40 | prompt: to be or not to be, that is
+               continuation: strategy guides as well <UNK> <UNK> for the number of solutions for <UNK>.
+ temp=1.00, topk=60 | prompt: to be or not to be, that is
+               continuation: task interface (<UNK>, or <UNK>, phd, and current example, advanced trained for the university organizational establishments). however, there is often not only to identify any of the `` best '', such as assigns less importance. this ability to do this
+
+Prompt: Oscar Piastri is a
+ temp=0.00, topk=0 | prompt: oscar <UNK> is a
+               continuation: <UNK>, and for <UNK>, <UNK>, and <UNK>, among other important <UNK>, the <UNK> <UNK>, and the <UNK> <UNK>, <UNK>, and <UNK>, among <UNK>, <UNK>, and <UNK>.
+ temp=0.70, topk=10 | prompt: oscar <UNK> is a
+               continuation: for `` <UNK> '' decision making the <UNK> group of grateful dead and the <UNK> <UNK>.
+ temp=0.70, topk=40 | prompt: oscar <UNK> is a
+               continuation: <UNK>, and for the newest <UNK> <UNK> <UNK> of <UNK> <UNK> as well to the <UNK> <UNK> <UNK>, <UNK> <UNK> in contrast to the <UNK> best known <UNK>, and <UNK>, who are required to <UNK> for the best known and trusted target for a cappella the
+ temp=1.00, topk=60 | prompt: oscar <UNK> is a
+               continuation: teacher, and document administrator shaping skills by the european integration of intelligence establishments in the field <UNK> system (e.g., and affinity for <UNK>, more powerful <UNK>) and confirms <UNK> example of available, including <UNK> or <UNK> and their use of database of information on
+
+Prompt: A good career choice for graduate software engineers is
+ temp=0.00, topk=0 | prompt: a good career choice for graduate software engineers is
+               continuation: for a variety of applications such as <UNK>, <UNK>, and <UNK>.
+ temp=0.70, topk=10 | prompt: a good career choice for graduate software engineers is
+               continuation: for younger, <UNK>, <UNK>, and senior <UNK>.
+ temp=0.70, topk=40 | prompt: a good career choice for graduate software engineers is
+               continuation: for an expert on the role models that task developers attempting to support <UNK> applications for improved performance management.
+ temp=1.00, topk=60 | prompt: a good career choice for graduate software engineers is
+               continuation: and rescue helpful <UNK> <UNK>, <UNK>, and system performance response to injury <UNK>, which led to a higher ranking as best by a <UNK> backup full-time with training tools.

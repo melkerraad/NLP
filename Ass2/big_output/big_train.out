@@ -1,0 +1,62 @@
+Using device: cuda
+Epoch 1/20 - Train loss: 4.9230
+  Validation loss: 4.4531 | Perplexity: 85.89
+  Epoch time: 332.33s
+Epoch 2/20 - Train loss: 4.2354
+  Validation loss: 4.2409 | Perplexity: 69.47
+  Epoch time: 334.33s
+Epoch 3/20 - Train loss: 4.0019
+  Validation loss: 4.1625 | Perplexity: 64.23
+  Epoch time: 334.08s
+Epoch 4/20 - Train loss: 3.8587
+  Validation loss: 4.1297 | Perplexity: 62.16
+  Epoch time: 333.57s
+Epoch 5/20 - Train loss: 3.7537
+  Validation loss: 4.1156 | Perplexity: 61.29
+  Epoch time: 333.55s
+Epoch 6/20 - Train loss: 3.6687
+  Validation loss: 4.1225 | Perplexity: 61.71
+  Epoch time: 333.91s
+Epoch 7/20 - Train loss: 3.5960
+  Validation loss: 4.1340 | Perplexity: 62.43
+  Epoch time: 330.76s
+Epoch 8/20 - Train loss: 3.5322
+  Validation loss: 4.1521 | Perplexity: 63.57
+  Epoch time: 332.14s
+Epoch 9/20 - Train loss: 3.4749
+  Validation loss: 4.1799 | Perplexity: 65.36
+  Epoch time: 334.05s
+Epoch 10/20 - Train loss: 3.4228
+  Validation loss: 4.2047 | Perplexity: 67.00
+  Epoch time: 334.04s
+Epoch 11/20 - Train loss: 3.3749
+  Validation loss: 4.2314 | Perplexity: 68.81
+  Epoch time: 334.25s
+Epoch 12/20 - Train loss: 3.3306
+  Validation loss: 4.2697 | Perplexity: 71.50
+  Epoch time: 334.24s
+Epoch 13/20 - Train loss: 3.2900
+  Validation loss: 4.3044 | Perplexity: 74.03
+  Epoch time: 334.06s
+Epoch 14/20 - Train loss: 3.2524
+  Validation loss: 4.3388 | Perplexity: 76.62
+  Epoch time: 334.12s
+Epoch 15/20 - Train loss: 3.2173
+  Validation loss: 4.3693 | Perplexity: 78.99
+  Epoch time: 334.02s
+Epoch 16/20 - Train loss: 3.1851
+  Validation loss: 4.4051 | Perplexity: 81.87
+  Epoch time: 334.32s
+Epoch 17/20 - Train loss: 3.1546
+  Validation loss: 4.4354 | Perplexity: 84.39
+  Epoch time: 333.83s
+Epoch 18/20 - Train loss: 3.1260
+  Validation loss: 4.4776 | Perplexity: 88.02
+  Epoch time: 334.01s
+Epoch 19/20 - Train loss: 3.0993
+  Validation loss: 4.5097 | Perplexity: 90.89
+  Epoch time: 333.45s
+Epoch 20/20 - Train loss: 3.0742
+  Validation loss: 4.5335 | Perplexity: 93.08
+  Epoch time: 331.07s
+Saving model to Ass2_output ...
