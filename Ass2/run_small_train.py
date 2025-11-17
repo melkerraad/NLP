@@ -1,10 +1,11 @@
 # Ass2/run_small_train.py
+import nltk
+nltk.download('punkt_tab')
+
 import torch
 from Ass2.A2 import A2ModelConfig, A2Transformer
 from Ass1.A1 import build_tokenizer, A1Tokenizer, pretokenize_dataset, TrainingArguments, A1Trainer
 from datasets import load_dataset
-import nltk
-nltk.download('punkt')
 
 # 1) build or load tokenizer
 TRAIN_FILE = "/data/courses/2025_dat450_dit247/assignments/a1/train.txt"

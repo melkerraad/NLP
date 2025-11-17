@@ -1,0 +1,17 @@
+Using device: cuda
+Epoch 1/5 - Train loss: 4.9682
+  Validation loss: 4.5169 | Perplexity: 91.55
+  Epoch time: 276.47s
+Epoch 2/5 - Train loss: 4.3047
+  Validation loss: 4.3150 | Perplexity: 74.81
+  Epoch time: 278.31s
+Epoch 3/5 - Train loss: 4.0774
+  Validation loss: 4.2400 | Perplexity: 69.41
+  Epoch time: 278.58s
+Epoch 4/5 - Train loss: 3.9365
+  Validation loss: 4.2028 | Perplexity: 66.87
+  Epoch time: 278.67s
+Epoch 5/5 - Train loss: 3.8333
+  Validation loss: 4.1964 | Perplexity: 66.45
+  Epoch time: 265.75s
+Saving model to Ass2_output ...
