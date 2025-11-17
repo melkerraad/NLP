@@ -5,5 +5,5 @@
 #SBATCH -o eresults.out
 #SBATCH -e eresults.err
 
-cd /data/users/ylvaer/NLP
+cd /data/users/melkerr/NLP
 python3 -m Ass2.evala2

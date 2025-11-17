@@ -7,13 +7,13 @@ from Ass2.A2 import A2ModelConfig, A2Transformer
 from Ass1.A1 import build_tokenizer, A1Tokenizer, pretokenize_dataset, TrainingArguments, A1Trainer
 from datasets import load_dataset
 
-# 1) build or load tokenizer
+# build or load tokenizer
 TRAIN_FILE = "/data/courses/2025_dat450_dit247/assignments/a1/train.txt"
 VAL_FILE   = "/data/courses/2025_dat450_dit247/assignments/a1/val.txt"
 vocab, inv_vocab = build_tokenizer(TRAIN_FILE, max_voc_size=20000)
 tokenizer = A1Tokenizer(vocab, max_length=200)
 
-# 2) model config + model
+#model config
 cfg = A2ModelConfig(
     vocab_size = max(vocab.values()) + 1,
     hidden_size = 256,
@@ -26,13 +26,13 @@ cfg = A2ModelConfig(
 )
 model = A2Transformer(cfg)
 
-# 3) dataset load and pretokenize (reusing A1.pretokenize_dataset)
+#dataset load and pretokenize
 dataset = load_dataset('text', data_files={'train': TRAIN_FILE, 'val': VAL_FILE})
 dataset = dataset.filter(lambda x: x['text'].strip() != '')
 train_data = pretokenize_dataset(dataset['train'], tokenizer)
 val_data = pretokenize_dataset(dataset['val'], tokenizer)
 
-# 4) training args and Trainer
+# Training
 args = TrainingArguments(
     learning_rate = 3e-4,
     num_train_epochs = 20,

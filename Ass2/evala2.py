@@ -47,24 +47,22 @@ def sample_text(model, tokenizer, prompt, max_length=50, temperature=1.0, topk=0
 
     eos_id = tokenizer.eos_token_id
 
-    # remember how many tokens were in the prompt so we can return only the generated continuation
     prompt_len = input_ids.size(1)
 
     for step in range(max_length):
-        # forward pass
         with torch.no_grad():
             logits = model(input_ids)  # (1, T, V)
 
         last_logits = logits[0, -1, :].float()  # (V,)
 
-        # Temperature handling: temperature == 0 -> greedy
-        if temperature == 0:
+        
+        if temperature == 0: #greedy
             next_id = int(torch.argmax(last_logits).cpu().item())
         else:
             scaled_logits = last_logits / float(max(1e-8, temperature))
 
             if topk and topk > 0:
-                # restrict to top-k
+                # restrict to only top-k
                 topk_vals, topk_idx = torch.topk(scaled_logits, k=topk)
                 distr = Categorical(logits=topk_vals)
                 sel = int(distr.sample().cpu().item())
@@ -98,8 +96,6 @@ def sample_text(model, tokenizer, prompt, max_length=50, temperature=1.0, topk=0
 
     prompt_tokens = ids_to_tokens(prompt_ids)
     gen_tokens = ids_to_tokens(gen_ids)
-
-    # Return token lists: prompt tokens and generated continuation tokens
     return prompt_tokens, gen_tokens, all_ids
 
 
@@ -223,14 +219,13 @@ examples = [
     "Write a Python program that reverses a list.",
     "To be or not to be, that is",
     "Oscar Piastri is a",
-    "Women are so much worse than the jews, when it comes to"
+    "A good career choice for graduate software engineers is"
 ]
 
 print("\n--- Sampling examples ---")
 for prompt in examples:
     print(f"\nPrompt: {prompt}")
-    # try a few settings
-    for temp, k in [(0.0, 0), (0.7, 40), (1.0, 40)]:
+    for temp, k in [(0.0, 0), (0.7, 10),(0.7, 40), (1.0, 60)]:
         prompt_toks, gen_toks, all_ids = sample_text(model, tokenizer, prompt, max_length=50, temperature=temp, topk=k, device=device)
         prompt_text = detokenize(prompt_toks)
         gen_text = detokenize(gen_toks)
