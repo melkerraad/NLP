@@ -121,11 +121,8 @@ def detokenize(tokens):
             out = out + " " + tok
     return out
 
-
-
-
 ###
-### Load and pretokenize validation set
+### Load and tokenize validation set
 ###
 
 VAL_FILE = "/data/courses/2025_dat450_dit247/assignments/a1/val.txt"
