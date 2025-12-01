@@ -1,3 +1,5 @@
+#make sure to activate dat450_venv before running this script, will not work otherwise
+
 import pandas as pd
 tmp_data = pd.read_json("ori_pqal.json").T
 # some labels have been defined as "maybe", only keep the yes/no answers
