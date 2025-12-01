@@ -13,8 +13,9 @@ questions = pd.DataFrame({"question": tmp_data.QUESTION,
              "gold_context": tmp_data.LONG_ANSWER,
              "gold_document_id": documents.index})
 
-print(questions.iloc[0].question)
-print(documents.iloc[0].abstract)
+print(f"\n\n=== SANITY CHECK 1===")
+print(f"Question: {questions.iloc[0].question}")
+print(f"Document abstract: {documents.iloc[0].abstract}")
 
 #Initialize the model, load llama from huggingface
 import os
@@ -30,6 +31,9 @@ model=HuggingFacePipeline.from_model_id(
 )
 
 #Testing the model on a basic prompt
+print(f"\n\n=== SANITY CHECK 2===")
+print("Question: What is the average area of a parking lot?\n")
+print(f"Answer: {model.invoke("What is the average area of a parking lot?")}")
 print(model.invoke("What is the average area of a parking lot?"))
 
 #Initializing th embedding model 
@@ -39,6 +43,8 @@ from langchain_huggingface.embeddings import HuggingFaceEmbeddings
 embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
 text = "This is a test document."
 query_result = embeddings.embed_query(text)
+print("\n\n=== SANITY CHECK 3===")
+print("Embedding for test document:")
 print(query_result[:3])
 doc_result = embeddings.embed_documents([text])
 
