@@ -25,7 +25,7 @@ model=HuggingFacePipeline.from_model_id(
     model_id="meta-llama/Llama-3.2-3B", 
     task="text-generation",
     device=0, #Use GPU
-    pipeline_kwargs={"return_full_text": False},
+    pipeline_kwargs={"return_full_text": False, "max_new_tokens": 150, "do_sample": False},
     model_kwargs={"use_auth_token": hf_token}
 )
 
@@ -49,8 +49,8 @@ doc_result = embeddings.embed_documents([text])
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=500,
-        chunk_overlap=20,
+        chunk_size=1000,
+        chunk_overlap=100,
         length_function=len,
         is_separator_regex=False,
     )
@@ -91,5 +91,53 @@ for res in results_simsearch:
     print("---")
 
 print("should have printed the results by now")
+
+# Step 4: Build RAG pipeline (Option B)
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough, RunnableParallel
+
+#Define retriever (fetch 3 documents for better context)
+retriever = vector_store.as_retriever(search_kwargs={"k": 3})
+
+def format_docs(docs):
+    return "\n\n".join(doc.page_content for doc in docs) #formatting function to combine docs into context string
+
+#Define template and create prompt
+template = """Answer the question based only on the context below. Be very brief and specific (1-3 sentences).
+Context:
+{context}
+Question:
+{question}
+Answer:"""
+prompt = ChatPromptTemplate.from_template(template)
+
+#Define RunnableParallel object with context and question
+runnable_parallel_object = RunnableParallel(
+    {"context": retriever | format_docs, "question": RunnablePassthrough()}
+)
+
+#Construct the retrieval chain (text generation only). The chain receives the dict from RunnableParallel, so prompt goes first.
+chain = (
+    prompt
+    | model
+    | StrOutputParser()
+)
+
+#Combine using assign method. This passes the {context, question} dict through prompt, then to model.
+rag_chain = runnable_parallel_object.assign(answer=chain)
+
+# Sanity check
+test_question = questions.iloc[0].question
+print(f"\n\n=== SANITY CHECK ===")
+print(f"Question: {test_question}")
+
+result = rag_chain.invoke(test_question)
+
+print(f"\nContext:")
+print(result["context"])
+
+print(f"\nAnswer:")
+print(result["answer"])
 
 
