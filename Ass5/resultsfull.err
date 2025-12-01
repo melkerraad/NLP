@@ -1,0 +1,10 @@
+/data/courses/2025_dat450_dit247/venvs/dat450_venv/lib/python3.12/site-packages/transformers/models/auto/tokenization_auto.py:1025: FutureWarning: The `use_auth_token` argument is deprecated and will be removed in v5 of Transformers. Please use `token` instead.
+  warnings.warn(
+/data/courses/2025_dat450_dit247/venvs/dat450_venv/lib/python3.12/site-packages/transformers/models/auto/auto_factory.py:492: FutureWarning: The `use_auth_token` argument is deprecated and will be removed in v5 of Transformers. Please use `token` instead.
+  warnings.warn(
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.50it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.54it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.30it/s]
+/data/courses/2025_dat450_dit247/venvs/dat450_venv/lib/python3.12/site-packages/transformers/pipelines/__init__.py:834: FutureWarning: The `use_auth_token` argument is deprecated and will be removed in v5 of Transformers. Please use `token` instead.
+  warnings.warn(
+Device set to use cuda:0
+The following generation flags are not valid and may be ignored: ['temperature', 'top_p']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+You seem to be using the pipelines sequentially on GPU. In order to maximize efficiency please use a dataset

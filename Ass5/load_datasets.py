@@ -176,7 +176,7 @@ def extract_yes_no(answer):
     return None  # Ambiguous or neither
 
 # SAMPLE SIZE - set to small number for testing, None for full dataset
-SAMPLE_SIZE = 50  # Change to None to process all questions
+SAMPLE_SIZE = None  # Change to None to process all questions
 
 eval_questions = questions.head(SAMPLE_SIZE) if SAMPLE_SIZE else questions
 
