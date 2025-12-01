@@ -12,3 +12,6 @@ questions = pd.DataFrame({"question": tmp_data.QUESTION,
              "gold_label": tmp_data.final_decision,
              "gold_context": tmp_data.LONG_ANSWER,
              "gold_document_id": documents.index})
+
+print(questions.iloc[0].question)
+print(documents.iloc[0].abstract)
