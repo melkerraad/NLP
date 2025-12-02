@@ -1,0 +1,449 @@
+
+SANITY CHECK 1
+
+Example question: Do mitochondria play a role in remodelling lace plant leaves during programmed cell death?
+
+Example document abstract: Programmed cell death (PCD) is the regulated death of cells within an organism. The lace plant (Aponogeton madagascariensis) produces perforations in its leaves through PCD. The leaves of the plant consist of a latticework of longitudinal and transverse veins enclosing areoles. PCD occurs in the cells at the center of these areoles and progresses outwards, stopping approximately five cells from the vasculature. The role of mitochondria during PCD has been recognized in animals; however, it has been less studied during PCD in plants. The following paper elucidates the role of mitochondrial dynamics during developmentally regulated PCD in vivo in A. madagascariensis. A single areole within a window stage leaf (PCD is occurring) was divided into three areas based on the progression of PCD; cells that will not undergo PCD (NPCD), cells in early stages of PCD (EPCD), and cells in late stages of PCD (LPCD). Window stage leaves were stained with the mitochondrial dye MitoTracker Red CMXRos and examined. Mitochondrial dynamics were delineated into four categories (M1-M4) based on characteristics including distribution, motility, and membrane potential (ΔΨm). A TUNEL assay showed fragmented nDNA in a gradient over these mitochondrial stages. Chloroplasts and transvacuolar strands were also examined using live cell imaging. The possible importance of mitochondrial permeability transition pore (PTP) formation during PCD was indirectly examined via in vivo cyclosporine A (CsA) treatment. This treatment resulted in lace plant leaves with a significantly lower number of perforations compared to controls, and that displayed mitochondrial dynamics similar to that of non-PCD cells. Results depicted mitochondrial dynamics in vivo as PCD progresses within the lace plant, and highlight the correlation of this organelle with other organelles during developmental PCD. To the best of our knowledge, this is the first report of mitochondria and chloroplasts moving on transvacuolar strands to form a ring structure surrounding the nucleus during developmental PCD. Also, for the first time, we have shown the feasibility for the use of CsA in a whole plant system. Overall, our findings implicate the mitochondria as playing a critical and early role in developmentally regulated PCD in the lace plant.
+
+SANITY CHECK 2
+
+Question: What is the average area of a parking lot?
+
+Answer:  The average area of a parking lot is 1,000 square feet. This is the average size of a parking lot in the United States. The average size of a parking lot in the United States is 1,000 square feet. This is the average size of a parking lot in the United States. The average size of a parking lot in the United States is 1,000 square feet. This is the average size of a parking lot in the United States. The average size of a parking lot in the United States is 1,000 square feet. This is the average size of a parking lot in the United States. The average size of a parking lot in the United States is 1,000 square feet. This is the
+
+SANITY CHECK 3
+
+Embedding for test document: [-0.04895174130797386, -0.03986189886927605, -0.021562783047556877]
+
+SANITY CHECK 3.2
+
+
+Total chunks created: 1902
+
+Sample chunks:
+
+Chunk 1:
+Content: Programmed cell death (PCD) is the regulated death of cells within an organism. The lace plant (Aponogeton madagascariensis) produces perforations in its leaves through PCD. The leaves of the plant consist of a latticework of longitudinal and transverse veins enclosing areoles. PCD occurs in the cells at the center of these areoles and progresses outwards, stopping approximately five cells from the vasculature. The role of mitochondria during PCD has been recognized in animals; however, it has b...
+Metadata: {'id': 21645374}
+
+Chunk 2:
+Content: of PCD (LPCD). Window stage leaves were stained with the mitochondrial dye MitoTracker Red CMXRos and examined. Mitochondrial dynamics were delineated into four categories (M1-M4) based on characteristics including distribution, motility, and membrane potential (ΔΨm). A TUNEL assay showed fragmented nDNA in a gradient over these mitochondrial stages. Chloroplasts and transvacuolar strands were also examined using live cell imaging. The possible importance of mitochondrial permeability transition...
+Metadata: {'id': 21645374}
+
+Chunk 3:
+Content: correlation of this organelle with other organelles during developmental PCD. To the best of our knowledge, this is the first report of mitochondria and chloroplasts moving on transvacuolar strands to form a ring structure surrounding the nucleus during developmental PCD. Also, for the first time, we have shown the feasibility for the use of CsA in a whole plant system. Overall, our findings implicate the mitochondria as playing a critical and early role in developmentally regulated PCD in the l...
+Metadata: {'id': 21645374}
+Vector store created
+
+SANITY CHECK 3.3
+
+
+Relevant chunk:
+* [SIM=0.575819] Programmed cell death (PCD) is the regulated death of cells within an organism. The lace plant (Aponogeton madagascariensis) produces perforations in its leaves through PCD. The leaves of the plant consist of a latticework of longitudinal and transverse veins enclosing areoles. PCD occurs in the cells at the center of these areoles and progresses outwards, stopping approximately five cells from the vasculature. The role of mitochondria during PCD has been recognized in animals; however, it has been less studied during PCD in plants. The following paper elucidates the role of mitochondrial dynamics during developmentally regulated PCD in vivo in A. madagascariensis. A single areole within a window stage leaf (PCD is occurring) was divided into three areas based on the progression of PCD; cells that will not undergo PCD (NPCD), cells in early stages of PCD (EPCD), and cells in late stages of PCD (LPCD). Window stage leaves were stained with the mitochondrial dye MitoTracker Red CMXRos [{'id': 21645374}]
+
+Relevant chunk:
+* [SIM=0.652903] in non-enzymatic biochemistry involving alterations in autoxidation of both carbohydrates and lipids. [{'id': 9767546}]
+
+Relevant chunk:
+* [SIM=0.667153] Kaplan-Meier method, the log-rank test, and Cox regression analysis were used in the statistical analysis. We enrolled 190 patients (157 men and 33 women) with a mean (SD) age of 61.75 (10.85) years (range, 33-85 years). Of these patients, 144 received cytostatic treatment and 46 palliative treatment. The median survival was 31 weeks and was related to absence of weight loss (hazard ratio [HR], 1.73; 95% confidence interval [CI], 1.26-2.39; P=.001), cytostatic treatment (HR, 1.85; 95% CI, 1.25-2.76; P=.002), and ECOG score of 0 to 1 (HR, 2.84; 95% CI, 1.62-5.00; P=.0001). In patients with ECOG scores of 0 to 1, weight loss and treatment were significant prognostic factors. Survival in the ECOG 2 group was 15 weeks for patients undergoing cytostatic treatment and 11 weeks for patients with symptomatic treatment. In normal clinical practice, chemotherapy significantly prolongs survival in patients with performance status of less than 2, more time being gained if there is no associated [{'id': 16827975}]
+
+SANITY CHECK 4B
+
+Question: Do mitochondria play a role in remodelling lace plant leaves during programmed cell death?
+
+Context:
+Programmed cell death (PCD) is the regulated death of cells within an organism. The lace plant (Aponogeton madagascariensis) produces perforations in its leaves through PCD. The leaves of the plant consist of a latticework of longitudinal and transverse veins enclosing areoles. PCD occurs in the cells at the center of these areoles and progresses outwards, stopping approximately five cells from the vasculature. The role of mitochondria during PCD has been recognized in animals; however, it has been less studied during PCD in plants. The following paper elucidates the role of mitochondrial dynamics during developmentally regulated PCD in vivo in A. madagascariensis. A single areole within a window stage leaf (PCD is occurring) was divided into three areas based on the progression of PCD; cells that will not undergo PCD (NPCD), cells in early stages of PCD (EPCD), and cells in late stages of PCD (LPCD). Window stage leaves were stained with the mitochondrial dye MitoTracker Red CMXRos
+
+of PCD (LPCD). Window stage leaves were stained with the mitochondrial dye MitoTracker Red CMXRos and examined. Mitochondrial dynamics were delineated into four categories (M1-M4) based on characteristics including distribution, motility, and membrane potential (ΔΨm). A TUNEL assay showed fragmented nDNA in a gradient over these mitochondrial stages. Chloroplasts and transvacuolar strands were also examined using live cell imaging. The possible importance of mitochondrial permeability transition pore (PTP) formation during PCD was indirectly examined via in vivo cyclosporine A (CsA) treatment. This treatment resulted in lace plant leaves with a significantly lower number of perforations compared to controls, and that displayed mitochondrial dynamics similar to that of non-PCD cells. Results depicted mitochondrial dynamics in vivo as PCD progresses within the lace plant, and highlight the correlation of this organelle with other organelles during developmental PCD. To the best of our
+
+correlation of this organelle with other organelles during developmental PCD. To the best of our knowledge, this is the first report of mitochondria and chloroplasts moving on transvacuolar strands to form a ring structure surrounding the nucleus during developmental PCD. Also, for the first time, we have shown the feasibility for the use of CsA in a whole plant system. Overall, our findings implicate the mitochondria as playing a critical and early role in developmentally regulated PCD in the lace plant.
+
+Answer:
+ Yes, mitochondria play a role in remodelling lace plant leaves during programmed cell death. The lace plant (Aponogeton madagascariensis) produces perforations in its leaves through programmed cell death (PCD). The leaves of the plant consist of a latticework of longitudinal and transverse veins enclosing areoles. PCD occurs in the cells at the center of these areoles and progresses outwards, stopping approximately five cells from the vasculature. The role of mitochondria during PCD has been recognized in animals; however, it has been less studied during PCD in plants. The following paper elucidates the role of mitochondrial dynamics during developmentally regulated PCD in vivo in A. madagascari
+
+
+EVALUATION:
+
+TASK 1: Evaluating RAG with context
+Processing 890 questions...
+  Progress: 0/890 (0.0s elapsed)
+  Progress: 10/890 (24.4s elapsed)
+  Progress: 20/890 (50.2s elapsed)
+  Progress: 30/890 (69.5s elapsed)
+  Progress: 40/890 (92.6s elapsed)
+  Progress: 50/890 (118.8s elapsed)
+  Progress: 60/890 (152.4s elapsed)
+  Progress: 70/890 (171.4s elapsed)
+  Progress: 80/890 (194.9s elapsed)
+  Progress: 90/890 (220.7s elapsed)
+  Progress: 100/890 (246.5s elapsed)
+  Progress: 110/890 (261.6s elapsed)
+  Progress: 120/890 (285.4s elapsed)
+  Progress: 130/890 (313.4s elapsed)
+  Progress: 140/890 (334.1s elapsed)
+  Progress: 150/890 (353.8s elapsed)
+  Progress: 160/890 (382.8s elapsed)
+  Progress: 170/890 (408.4s elapsed)
+  Progress: 180/890 (434.6s elapsed)
+  Progress: 190/890 (456.5s elapsed)
+  Progress: 200/890 (483.9s elapsed)
+  Progress: 210/890 (505.0s elapsed)
+  Progress: 220/890 (524.4s elapsed)
+  Progress: 230/890 (551.5s elapsed)
+  Progress: 240/890 (577.8s elapsed)
+  Progress: 250/890 (595.5s elapsed)
+  Progress: 260/890 (617.0s elapsed)
+  Progress: 270/890 (633.9s elapsed)
+  Progress: 280/890 (655.1s elapsed)
+  Progress: 290/890 (676.6s elapsed)
+  Progress: 300/890 (699.0s elapsed)
+  Progress: 310/890 (718.3s elapsed)
+  Progress: 320/890 (748.5s elapsed)
+  Progress: 330/890 (777.3s elapsed)
+  Progress: 340/890 (798.0s elapsed)
+  Progress: 350/890 (817.9s elapsed)
+  Progress: 360/890 (840.6s elapsed)
+  Progress: 370/890 (860.2s elapsed)
+  Progress: 380/890 (882.9s elapsed)
+  Progress: 390/890 (906.1s elapsed)
+  Progress: 400/890 (930.9s elapsed)
+  Progress: 410/890 (958.1s elapsed)
+  Progress: 420/890 (974.8s elapsed)
+  Progress: 430/890 (990.2s elapsed)
+  Progress: 440/890 (1009.3s elapsed)
+  Progress: 450/890 (1040.6s elapsed)
+  Progress: 460/890 (1068.0s elapsed)
+  Progress: 470/890 (1087.7s elapsed)
+  Progress: 480/890 (1118.5s elapsed)
+  Progress: 490/890 (1130.7s elapsed)
+  Progress: 500/890 (1151.2s elapsed)
+  Progress: 510/890 (1180.0s elapsed)
+  Progress: 520/890 (1205.7s elapsed)
+  Progress: 530/890 (1228.9s elapsed)
+  Progress: 540/890 (1247.5s elapsed)
+  Progress: 550/890 (1267.4s elapsed)
+  Progress: 560/890 (1288.2s elapsed)
+  Progress: 570/890 (1311.0s elapsed)
+  Progress: 580/890 (1332.8s elapsed)
+  Progress: 590/890 (1353.0s elapsed)
+  Progress: 600/890 (1366.2s elapsed)
+  Progress: 610/890 (1389.4s elapsed)
+  Progress: 620/890 (1415.3s elapsed)
+  Progress: 630/890 (1435.3s elapsed)
+  Progress: 640/890 (1457.8s elapsed)
+  Progress: 650/890 (1476.9s elapsed)
+  Progress: 660/890 (1498.0s elapsed)
+  Progress: 670/890 (1517.1s elapsed)
+  Progress: 680/890 (1534.8s elapsed)
+  Progress: 690/890 (1558.1s elapsed)
+  Progress: 700/890 (1578.5s elapsed)
+  Progress: 710/890 (1606.8s elapsed)
+  Progress: 720/890 (1632.5s elapsed)
+  Progress: 730/890 (1657.8s elapsed)
+  Progress: 740/890 (1679.5s elapsed)
+  Progress: 750/890 (1697.8s elapsed)
+  Progress: 760/890 (1713.6s elapsed)
+  Progress: 770/890 (1733.0s elapsed)
+  Progress: 780/890 (1752.2s elapsed)
+  Progress: 790/890 (1783.6s elapsed)
+  Progress: 800/890 (1805.6s elapsed)
+  Progress: 810/890 (1831.6s elapsed)
+  Progress: 820/890 (1850.1s elapsed)
+  Progress: 830/890 (1873.6s elapsed)
+  Progress: 840/890 (1891.7s elapsed)
+  Progress: 850/890 (1910.8s elapsed)
+  Progress: 860/890 (1935.1s elapsed)
+  Progress: 870/890 (1957.3s elapsed)
+  Progress: 880/890 (1985.9s elapsed)
+
+RAG Results (completed in 2005.3s):
+  Total questions: 890
+  Valid answers: 794 (89.2%)
+  Accuracy: 0.8589
+  F1-score: 0.8793
+TASK 2: Evaluating baseline without context
+Processing 890 questions...
+  Progress: 0/890 (0.0s elapsed)
+  Progress: 10/890 (31.0s elapsed)
+  Progress: 20/890 (62.8s elapsed)
+  Progress: 30/890 (89.8s elapsed)
+  Progress: 40/890 (121.5s elapsed)
+  Progress: 50/890 (151.1s elapsed)
+  Progress: 60/890 (180.7s elapsed)
+  Progress: 70/890 (207.5s elapsed)
+  Progress: 80/890 (239.2s elapsed)
+  Progress: 90/890 (269.0s elapsed)
+  Progress: 100/890 (300.8s elapsed)
+  Progress: 110/890 (332.5s elapsed)
+  Progress: 120/890 (361.1s elapsed)
+  Progress: 130/890 (390.9s elapsed)
+  Progress: 140/890 (420.7s elapsed)
+  Progress: 150/890 (449.2s elapsed)
+  Progress: 160/890 (481.0s elapsed)
+  Progress: 170/890 (508.8s elapsed)
+  Progress: 180/890 (538.9s elapsed)
+  Progress: 190/890 (568.4s elapsed)
+  Progress: 200/890 (596.0s elapsed)
+  Progress: 210/890 (627.8s elapsed)
+  Progress: 220/890 (657.7s elapsed)
+  Progress: 230/890 (686.5s elapsed)
+  Progress: 240/890 (712.9s elapsed)
+  Progress: 250/890 (744.7s elapsed)
+  Progress: 260/890 (776.4s elapsed)
+  Progress: 270/890 (802.5s elapsed)
+  Progress: 280/890 (834.3s elapsed)
+  Progress: 290/890 (862.9s elapsed)
+  Progress: 300/890 (891.6s elapsed)
+  Progress: 310/890 (919.9s elapsed)
+  Progress: 320/890 (950.1s elapsed)
+  Progress: 330/890 (981.2s elapsed)
+  Progress: 340/890 (1012.9s elapsed)
+  Progress: 350/890 (1042.0s elapsed)
+  Progress: 360/890 (1070.0s elapsed)
+  Progress: 370/890 (1101.7s elapsed)
+  Progress: 380/890 (1132.1s elapsed)
+  Progress: 390/890 (1162.8s elapsed)
+  Progress: 400/890 (1194.0s elapsed)
+  Progress: 410/890 (1223.0s elapsed)
+  Progress: 420/890 (1247.2s elapsed)
+  Progress: 430/890 (1271.2s elapsed)
+  Progress: 440/890 (1300.6s elapsed)
+  Progress: 450/890 (1331.9s elapsed)
+  Progress: 460/890 (1359.5s elapsed)
+  Progress: 470/890 (1389.6s elapsed)
+  Progress: 480/890 (1416.9s elapsed)
+  Progress: 490/890 (1445.1s elapsed)
+  Progress: 500/890 (1469.3s elapsed)
+  Progress: 510/890 (1497.4s elapsed)
+  Progress: 520/890 (1527.4s elapsed)
+  Progress: 530/890 (1552.5s elapsed)
+  Progress: 540/890 (1580.2s elapsed)
+  Progress: 550/890 (1610.0s elapsed)
+  Progress: 560/890 (1639.5s elapsed)
+  Progress: 570/890 (1670.7s elapsed)
+  Progress: 580/890 (1697.5s elapsed)
+  Progress: 590/890 (1728.1s elapsed)
+  Progress: 600/890 (1750.4s elapsed)
+  Progress: 610/890 (1782.1s elapsed)
+  Progress: 620/890 (1811.0s elapsed)
+  Progress: 630/890 (1838.8s elapsed)
+  Progress: 640/890 (1869.3s elapsed)
+  Progress: 650/890 (1897.1s elapsed)
+  Progress: 660/890 (1924.8s elapsed)
+  Progress: 670/890 (1952.7s elapsed)
+  Progress: 680/890 (1979.1s elapsed)
+  Progress: 690/890 (2010.9s elapsed)
+  Progress: 700/890 (2039.7s elapsed)
+  Progress: 710/890 (2068.8s elapsed)
+  Progress: 720/890 (2094.8s elapsed)
+  Progress: 730/890 (2126.5s elapsed)
+  Progress: 740/890 (2155.5s elapsed)
+  Progress: 750/890 (2181.1s elapsed)
+  Progress: 760/890 (2203.7s elapsed)
+  Progress: 770/890 (2229.4s elapsed)
+  Progress: 780/890 (2256.7s elapsed)
+  Progress: 790/890 (2279.0s elapsed)
+  Progress: 800/890 (2310.8s elapsed)
+  Progress: 810/890 (2341.4s elapsed)
+  Progress: 820/890 (2365.5s elapsed)
+  Progress: 830/890 (2394.6s elapsed)
+  Progress: 840/890 (2420.5s elapsed)
+  Progress: 850/890 (2449.1s elapsed)
+  Progress: 860/890 (2477.5s elapsed)
+  Progress: 870/890 (2503.1s elapsed)
+  Progress: 880/890 (2534.8s elapsed)
+
+Baseline Results (completed in 2559.8s):
+  Total questions: 890
+  Valid answers: 890 (100.0%)
+  Accuracy: 0.6348
+  F1-score: 0.7601
+
+Comparison:
+  RAG Accuracy: 0.8589 vs Baseline Accuracy: 0.6348
+  RAG F1: 0.8793 vs Baseline F1: 0.7601
+  Did retrieval help? YES (accuracy)
+  Did retrieval help? YES (F1)
+
+TASK 3: Evaluating retrieval quality
+
+Checking if gold documents are retrieved for 890 questions
+  Progress: 0/890 (0.0s elapsed)
+  Progress: 10/890 (0.1s elapsed)
+  Progress: 20/890 (0.1s elapsed)
+  Progress: 30/890 (0.2s elapsed)
+  Progress: 40/890 (0.2s elapsed)
+  Progress: 50/890 (0.3s elapsed)
+  Progress: 60/890 (0.3s elapsed)
+  Progress: 70/890 (0.4s elapsed)
+  Progress: 80/890 (0.5s elapsed)
+  Progress: 90/890 (0.5s elapsed)
+  Progress: 100/890 (0.6s elapsed)
+  Progress: 110/890 (0.6s elapsed)
+  Progress: 120/890 (0.7s elapsed)
+  Progress: 130/890 (0.7s elapsed)
+  Progress: 140/890 (0.8s elapsed)
+  Progress: 150/890 (0.8s elapsed)
+  Progress: 160/890 (0.9s elapsed)
+  Progress: 170/890 (0.9s elapsed)
+  Progress: 180/890 (1.0s elapsed)
+  Progress: 190/890 (1.1s elapsed)
+  Progress: 200/890 (1.1s elapsed)
+  Progress: 210/890 (1.2s elapsed)
+  Progress: 220/890 (1.2s elapsed)
+  Progress: 230/890 (1.3s elapsed)
+  Progress: 240/890 (1.3s elapsed)
+  Progress: 250/890 (1.4s elapsed)
+  Progress: 260/890 (1.4s elapsed)
+  Progress: 270/890 (1.5s elapsed)
+  Progress: 280/890 (1.6s elapsed)
+  Progress: 290/890 (1.6s elapsed)
+  Progress: 300/890 (1.7s elapsed)
+  Progress: 310/890 (1.7s elapsed)
+  Progress: 320/890 (1.8s elapsed)
+  Progress: 330/890 (1.8s elapsed)
+  Progress: 340/890 (1.9s elapsed)
+  Progress: 350/890 (1.9s elapsed)
+  Progress: 360/890 (2.0s elapsed)
+  Progress: 370/890 (2.0s elapsed)
+  Progress: 380/890 (2.1s elapsed)
+  Progress: 390/890 (2.2s elapsed)
+  Progress: 400/890 (2.2s elapsed)
+  Progress: 410/890 (2.3s elapsed)
+  Progress: 420/890 (2.3s elapsed)
+  Progress: 430/890 (2.4s elapsed)
+  Progress: 440/890 (2.4s elapsed)
+  Progress: 450/890 (2.5s elapsed)
+  Progress: 460/890 (2.5s elapsed)
+  Progress: 470/890 (2.6s elapsed)
+  Progress: 480/890 (2.6s elapsed)
+  Progress: 490/890 (2.7s elapsed)
+  Progress: 500/890 (2.8s elapsed)
+  Progress: 510/890 (2.8s elapsed)
+  Progress: 520/890 (2.9s elapsed)
+  Progress: 530/890 (2.9s elapsed)
+  Progress: 540/890 (3.0s elapsed)
+  Progress: 550/890 (3.0s elapsed)
+  Progress: 560/890 (3.1s elapsed)
+  Progress: 570/890 (3.1s elapsed)
+  Progress: 580/890 (3.2s elapsed)
+  Progress: 590/890 (3.3s elapsed)
+  Progress: 600/890 (3.3s elapsed)
+  Progress: 610/890 (3.4s elapsed)
+  Progress: 620/890 (3.4s elapsed)
+  Progress: 630/890 (3.5s elapsed)
+  Progress: 640/890 (3.5s elapsed)
+  Progress: 650/890 (3.6s elapsed)
+  Progress: 660/890 (3.6s elapsed)
+  Progress: 670/890 (3.7s elapsed)
+  Progress: 680/890 (3.8s elapsed)
+  Progress: 690/890 (3.8s elapsed)
+  Progress: 700/890 (3.9s elapsed)
+  Progress: 710/890 (3.9s elapsed)
+  Progress: 720/890 (4.0s elapsed)
+  Progress: 730/890 (4.0s elapsed)
+  Progress: 740/890 (4.1s elapsed)
+  Progress: 750/890 (4.1s elapsed)
+  Progress: 760/890 (4.2s elapsed)
+  Progress: 770/890 (4.2s elapsed)
+  Progress: 780/890 (4.3s elapsed)
+  Progress: 790/890 (4.4s elapsed)
+  Progress: 800/890 (4.4s elapsed)
+  Progress: 810/890 (4.5s elapsed)
+  Progress: 820/890 (4.5s elapsed)
+  Progress: 830/890 (4.6s elapsed)
+  Progress: 840/890 (4.6s elapsed)
+  Progress: 850/890 (4.7s elapsed)
+  Progress: 860/890 (4.7s elapsed)
+  Progress: 870/890 (4.8s elapsed)
+  Progress: 880/890 (4.8s elapsed)
+
+Retrieval Results:
+  Total questions: 890
+  Gold document retrieved: 884 (99.3%)
+TASK 4: Inspecting sample results
+
+EXAMPLE 1/5
+
+Question: The Omega-3 Index: a new risk factor for death from coronary heart disease?
+Gold label: yes
+Gold document ID: 15208005
+
+Retrieved document IDs: [15208005, 15208005, 12006913]
+Gold document retrieved: YES
+
+Retrieved context (first 300 chars):
+associated with risk for CHD mortality. An Omega-3 Index of>or = 8% was associated with the greatest cardioprotection, whereas an index of<or = 4% was associated with the least. The Omega-3 Index may represent a novel, physiologically relevant, easily modified, independent, and graded risk factor fo...
+
+Model answer:  The Omega-3 Index is a new risk factor for death from coronary heart disease. The Omega-3 Index is a new risk factor for death from coronary heart disease. The Omega-3 Index is a new risk factor for death from coronary heart disease. The Omega-3 Index is a new risk factor for death from coronary heart disease. The Omega-3 Index is a new risk factor for death from coronary heart disease. The Omega-3 Index is a new risk factor for death from coronary heart disease. The Omega-3 Index is a new risk factor for death from coronary heart disease. The Omega-3 Index is a new risk factor for death from coronary heart disease. The Omega-3 Index is a new risk factor for death from coronary
+Predicted label: None
+Correct: NO
+
+EXAMPLE 2/5
+
+Question: Does Viral Co-Infection Influence the Severity of Acute Respiratory Infection in Children?
+Gold label: no
+Gold document ID: 27096199
+
+Retrieved document IDs: [27096199, 27096199, 26867834]
+Gold document retrieved: YES
+
+Retrieved context (first 300 chars):
+Multiple viruses are often detected in children with respiratory infection but the significance of co-infection in pathogenesis, severity and outcome is unclear. To correlate the presence of viral co-infection with clinical phenotype in children admitted with acute respiratory infections (ARI). We c...
+
+Model answer:  No, the presence of multiple viruses in hospitalized children with acute respiratory infection does not seem to have a major clinical impact in terms of severity. However, bacterial superinfection increases the severity of the disease course. On the contrary, pneumococcal vaccination plays a protective role.
+Explanation: Multiple viruses are often detected in children with respiratory infection but the significance of co-infection in pathogenesis, severity and outcome is unclear. To correlate the presence of viral co-infection with clinical phenotype in children admitted with acute respiratory infections (ARI). We collected detailed clinical information on severity for children admitted with ARI as part of a Spanish prospective multicenter study (GENDRES network) between 2011-2013. A nested polymerase chain reaction (
+Predicted label: no
+Correct: YES
+
+EXAMPLE 3/5
+
+Question: Does route of delivery affect maternal and perinatal outcome in women with eclampsia?
+Gold label: no
+Gold document ID: 22521460
+
+Retrieved document IDs: [22521460, 22521460, 28247485]
+Gold document retrieved: YES
+
+Retrieved context (first 300 chars):
+A policy of early cesarean delivery in eclampsia, carrying ≥34 weeks, is not associated with better outcomes.
+
+The route of delivery in eclampsia is controversial. We hypothesized that adverse maternal and perinatal outcomes may not be improved by early cesarean delivery. This was a randomized contr...
+
+Model answer:  No, route of delivery does not affect maternal and perinatal outcome in women with eclampsia.
+Predicted label: no
+Correct: YES
+
+EXAMPLE 4/5
+
+Question: Patient comprehension of emergency department care and instructions: are patients aware of when they do not understand?
+Gold label: no
+Gold document ID: 18619710
+
+Retrieved document IDs: [18619710, 18619710, 24973051]
+Gold document retrieved: YES
+
+Retrieved context (first 300 chars):
+To be able to adhere to discharge instructions after a visit to the emergency department (ED), patients should understand both the care that they received and their discharge instructions. The objective of this study is to assess, at discharge, patients' comprehension of their ED care and instructio...
+
+Model answer: 
+Predicted label: None
+Correct: NO
+
+EXAMPLE 5/5
+
+Question: Diagnostic and therapeutic ureteroscopy: is dilatation of ureteral meatus always necessary?
+Gold label: no
+Gold document ID: 19925761
+
+Retrieved document IDs: [19925761, 19925761, 17192736]
+Gold document retrieved: YES
+
+Retrieved context (first 300 chars):
+To assess the feasibility and safety of diagnostic or therapeutic semirigid ureteroscopy without ureteral meatus dilatation. A comparative, retrospective study was conducted of patients undergoing ureteroscopy from January 2000 to May 2008. For data analysis purposes, the population was divided into...
+
+Model answer:  No, it is not always necessary.
+Predicted label: no
+Correct: YES
+
+EVALUATION COMPLETE!
