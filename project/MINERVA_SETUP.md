@@ -9,16 +9,27 @@
    cd project
    ```
 
-2. **Create virtual environment (if not exists):**
+2. **Create virtual environment (REQUIRED on Minerva):**
    ```bash
-   python -m venv venv_minerva
+   # Create virtual environment
+   python3 -m venv venv_minerva
+   
+   # Activate it
    source venv_minerva/bin/activate
+   
+   # Verify you're using the venv Python
+   which python  # Should show: .../venv_minerva/bin/python
    ```
 
-3. **Install dependencies:**
+3. **Install dependencies (make sure venv is activated!):**
    ```bash
+   # Make sure venv is activated (you should see (venv_minerva) in your prompt)
    pip install -r requirements.txt
    ```
+   
+   **Note:** If you get "externally-managed-environment" error, make sure:
+   - You activated the virtual environment (`source venv_minerva/bin/activate`)
+   - You're using `pip` from the venv (check with `which pip`)
 
 4. **Set up your Hugging Face token:**
    ```bash
