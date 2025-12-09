@@ -61,18 +61,31 @@ Minerva uses SLURM for batch job scheduling. Follow the instructions at: https:/
 
 **Quick steps:**
 
-1. **Make sure you have the batch script:**
+1. **Find the correct partition name:**
    ```bash
-   # The script run_minerva_rag.sh is included in the repo
-   # Or create it manually if needed
+   # Check available partitions
+   sinfo
+   
+   # Or check GPU partitions specifically
+   sinfo -o "%P %G %l" | grep -i gpu
+   
+   # Common names: gpu-short, gpu-long, compute, etc.
    ```
 
-2. **Make it executable:**
+2. **Edit the batch script with correct partition:**
+   ```bash
+   # Edit run_minerva_rag.sh and replace <PARTITION_NAME>
+   nano run_minerva_rag.sh
+   # Change: #SBATCH --partition=<PARTITION_NAME>
+   # To:     #SBATCH --partition=gpu-short  (or whatever partition you found)
+   ```
+
+3. **Make it executable:**
    ```bash
    chmod +x run_minerva_rag.sh
    ```
 
-3. **Submit the job:**
+4. **Submit the job:**
    ```bash
    sbatch run_minerva_rag.sh
    ```
