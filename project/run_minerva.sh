@@ -9,6 +9,13 @@
 # Note: If partition "gpu-short" doesn't work, check available partitions with: sinfo
 # Common alternatives: gpu-long, compute, batch, or remove --partition line entirely
 
+# Initialize module system (required for SLURM batch jobs)
+if [ -f /usr/share/modules/init/bash ]; then
+    source /usr/share/modules/init/bash
+elif [ -f /etc/profile.d/modules.sh ]; then
+    source /etc/profile.d/modules.sh
+fi
+
 # Load required modules
 module load Python/3.10.4-GCCcore-11.3.0
 module load CUDA/11.7.0
