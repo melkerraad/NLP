@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=rag_test
 #SBATCH --gres=gpu:1
-#SBATCH --time=01:00:00
+#SBATCH --time=00:30:00
 #SBATCH --mem=8G
 #SBATCH --output=rag_output_%j.log
 #SBATCH --error=rag_error_%j.log
