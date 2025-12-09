@@ -55,27 +55,44 @@
    python test_rag.py
    ```
 
-## Using SLURM (if needed)
+## Running as a Batch Job (SLURM)
 
-If you want to run it as a batch job:
+Minerva uses SLURM for batch job scheduling. Follow the instructions at: https://git.chalmers.se/karppa/minerva
 
-```bash
-# Create a simple run script
-cat > run_rag.sh << 'EOF'
-#!/bin/bash
-#SBATCH --job-name=rag_test
-#SBATCH --partition=gpu
-#SBATCH --gres=gpu:1
-#SBATCH --time=01:00:00
-#SBATCH --mem=8G
+**Quick steps:**
 
-source venv_minerva/bin/activate
-python test_rag.py
-EOF
+1. **Make sure you have the batch script:**
+   ```bash
+   # The script run_minerva_rag.sh is included in the repo
+   # Or create it manually if needed
+   ```
 
-chmod +x run_rag.sh
-sbatch run_rag.sh
-```
+2. **Make it executable:**
+   ```bash
+   chmod +x run_minerva_rag.sh
+   ```
+
+3. **Submit the job:**
+   ```bash
+   sbatch run_minerva_rag.sh
+   ```
+
+4. **Check job status:**
+   ```bash
+   squeue -u $USER
+   ```
+
+5. **View output:**
+   ```bash
+   # Output will be in rag_output_<jobid>.log
+   # Errors will be in rag_error_<jobid>.log
+   tail -f rag_output_*.log  # Watch output in real-time
+   ```
+
+**Important:** Before submitting, make sure:
+- Virtual environment is created and has packages installed
+- `.env` file exists with your HF_TOKEN
+- You have requested access to Llama 3.2 1B-Instruct model
 
 ## Files Needed
 
