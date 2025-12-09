@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Data files (keep structure, ignore large files)
+data/raw/*.json
+data/raw/*.csv
+data/raw/*.txt
+!data/raw/.gitkeep
+data/processed/*.pkl
+data/processed/*.db
+!data/processed/.gitkeep
+
+# Vector databases
+*.chroma
+chroma_db/
+faiss_index/
+*.index
+
+# Environment variables
+.env
+.env.local
+
+# Logs
+*.log
+logs/
+
+# Model files (if storing locally)
+models/*.bin
+models/*.safetensors
+models/*.pt
+models/*.pth
+
+# Evaluation outputs
+evaluation_results/
+results/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+

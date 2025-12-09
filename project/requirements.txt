@@ -1,0 +1,58 @@
+# Core dependencies for RAG Course Chatbot Project
+
+# Data processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# NLP and embeddings
+sentence-transformers>=2.2.0
+transformers>=4.30.0
+torch>=2.0.0
+accelerate>=0.20.0  # For efficient model loading with device_map
+
+# Vector database
+chromadb>=0.4.0
+# faiss-cpu>=1.7.4  # Alternative: uncomment if using FAISS
+
+# LLM integration
+openai>=1.0.0  # For OpenAI API
+# anthropic>=0.7.0  # For Claude API (uncomment if using)
+
+# RAG frameworks (optional but recommended)
+langchain>=0.1.0
+langchain-openai>=0.0.5
+# llama-index>=0.9.0  # Alternative framework
+
+# Web scraping (for data collection)
+beautifulsoup4>=4.12.0
+requests>=2.31.0
+scrapy>=2.11.0  # Optional: for advanced scraping
+
+# Frontend
+streamlit>=1.28.0
+gradio>=4.0.0  # Alternative frontend option
+
+# API framework (if building API backend)
+fastapi>=0.104.0
+uvicorn>=0.24.0
+
+# Evaluation
+ragas>=0.1.0  # RAG evaluation framework
+rouge-score>=0.1.2
+sentencepiece>=0.1.99
+
+# Utilities
+python-dotenv>=1.0.0  # For environment variables
+tqdm>=4.66.0
+pydantic>=2.0.0
+
+# Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+
+# Development
+jupyter>=1.0.0
+ipykernel>=6.25.0
+black>=23.0.0  # Code formatting
+flake8>=6.0.0  # Linting
+
