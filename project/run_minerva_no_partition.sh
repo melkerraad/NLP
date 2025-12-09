@@ -1,13 +1,11 @@
 #!/bin/bash
 #SBATCH --job-name=rag_course_chatbot
-#SBATCH --partition=gpu-short
+# Alternative version without partition specification (uses default)
 #SBATCH --gres=gpu:1
 #SBATCH --time=02:00:00
 #SBATCH --mem=16G
 #SBATCH --output=rag_output_%j.log
 #SBATCH --error=rag_error_%j.log
-# Note: If partition "gpu-short" doesn't work, check available partitions with: sinfo
-# Common alternatives: gpu-long, compute, batch, or remove --partition line entirely
 
 # Load required modules
 module load Python/3.10.4-GCCcore-11.3.0
