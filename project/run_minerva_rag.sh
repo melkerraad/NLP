@@ -1,6 +1,5 @@
 #!/bin/bash
 #SBATCH --job-name=rag_test
-#SBATCH --partition=long  # Use 'long' partition (or check GPU partitions with: sinfo -o "%P %G" | grep gpu)
 #SBATCH --gres=gpu:1
 #SBATCH --time=01:00:00
 #SBATCH --mem=8G
