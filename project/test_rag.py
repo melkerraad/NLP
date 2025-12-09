@@ -1,0 +1,110 @@
+"""Simple RAG proof of concept test with Llama 3.2 1B.
+
+This script demonstrates the RAG pipeline:
+1. Loads the vector database (already created from scraped Chalmers courses)
+2. Retrieves relevant courses for a query
+3. Generates a response using Llama 3.2 1B (~2GB, smaller than 3B)
+"""
+
+from pathlib import Path
+import sys
+from dotenv import load_dotenv
+
+# Add project root to path
+project_root = Path(__file__).parent
+
+# Load environment variables from .env file (explicitly from project root)
+env_path = project_root / ".env"
+load_dotenv(dotenv_path=env_path)
+sys.path.insert(0, str(project_root))
+
+from src.retrieval.setup_retrieval import CourseRetriever
+from src.generation.llama_generator import LlamaRAGGenerator
+
+
+def main():
+    """Run RAG proof of concept test."""
+    print("=" * 70)
+    print("RAG Pipeline Proof of Concept - Llama 3.2 1B")
+    print("=" * 70)
+    
+    # Initialize retriever
+    print("\n[1/2] Loading vector database...")
+    db_directory = project_root / "data" / "chroma_db"
+    retriever = CourseRetriever(
+        collection_name="chalmers_courses",
+        persist_directory=str(db_directory)
+    )
+    print(f"[OK] Vector database loaded ({retriever.get_collection_size()} courses)")
+    
+    # Initialize generator
+    print("\n[2/2] Loading Llama 3.2 1B model...")
+    print("      (Using 1B model - ~2GB instead of 3B - ~6GB)")
+    print("      (This may take a few minutes on first run)")
+    try:
+        generator = LlamaRAGGenerator(
+            model_name="meta-llama/Llama-3.2-1B-Instruct",
+            use_alternative_if_gated=False  # Fail clearly if no access
+        )
+        print("[OK] Llama 3.2 1B model loaded")
+    except Exception as e:
+        print(f"[ERROR] Error loading model: {e}")
+        print("\nMake sure you have:")
+        print("  1. Set HF_TOKEN environment variable")
+        print("  2. Requested access to Llama 3.2 at:")
+        print("     https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct")
+        return
+    
+    # Test query
+    print("\n" + "=" * 70)
+    print("Testing RAG Pipeline")
+    print("=" * 70)
+    
+    query = "What courses teach deep learning?"
+    print(f"\nQuery: {query}")
+    print("-" * 70)
+    
+    # Retrieve relevant courses
+    retrieved = retriever.retrieve(query, top_k=3)
+    
+    if not retrieved:
+        print("[ERROR] No courses retrieved!")
+        return
+    
+    print(f"\nRetrieved {len(retrieved)} courses:")
+    for i, r in enumerate(retrieved, 1):
+        print(f"   {i}. {r['course_code']}: {r['course_name']}")
+    
+    # Format context for generator
+    context_docs = [
+        {
+            'course_code': r['course_code'],
+            'course_name': r['course_name'],
+            'document': r['document']
+        }
+        for r in retrieved
+    ]
+    
+    # Generate response
+    print("\nGenerating response...")
+    try:
+        result = generator.generate_with_sources(query, context_docs)
+        
+        print("\n" + "=" * 70)
+        print("ANSWER:")
+        print("=" * 70)
+        print(result['answer'])
+        print("\n" + "-" * 70)
+        print(f"Sources: {', '.join(result['sources'])}")
+        print("=" * 70)
+        print("\n[OK] RAG pipeline test successful!")
+        
+    except Exception as e:
+        print(f"[ERROR] Error generating response: {e}")
+        import traceback
+        traceback.print_exc()
+
+
+if __name__ == "__main__":
+    main()
+

@@ -33,15 +33,15 @@ class CourseRetriever:
         # Get or create collection
         try:
             self.collection = self.client.get_collection(collection_name)
-            print(f"✅ Loaded existing collection: {collection_name}")
+            print(f"[OK] Loaded existing collection: {collection_name}")
         except:
             self.collection = self.client.create_collection(collection_name)
-            print(f"✅ Created new collection: {collection_name}")
+            print(f"[OK] Created new collection: {collection_name}")
         
         # Initialize embedding model
         print("Loading embedding model...")
         self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
-        print("✅ Embedding model loaded")
+        print("[OK] Embedding model loaded")
     
     def prepare_documents(self, courses: List[Dict]) -> tuple:
         """Prepare documents for embedding.
@@ -124,7 +124,7 @@ class CourseRetriever:
             batch_num = (i // batch_size) + 1
             print(f"  Processed batch {batch_num}/{total_batches} ({len(batch_docs)} courses)")
         
-        print(f"\n✅ Added {len(courses)} courses to vector database")
+        print(f"\n[OK] Added {len(courses)} courses to vector database")
     
     def retrieve(self, query: str, top_k: int = 5) -> List[Dict]:
         """Retrieve relevant courses for a query.
@@ -178,7 +178,7 @@ def load_courses(data_path: Path) -> List[Dict]:
     print(f"Loading courses from {data_path}...")
     with open(data_path, 'r', encoding='utf-8') as f:
         courses = json.load(f)
-    print(f"✅ Loaded {len(courses)} courses")
+    print(f"[OK] Loaded {len(courses)} courses")
     return courses
 
 
@@ -230,7 +230,7 @@ def main():
     
     # Load courses
     if not courses_file.exists():
-        print(f"❌ Courses file not found: {courses_file}")
+        print(f"[ERROR] Courses file not found: {courses_file}")
         print("   Run the preprocessing script first!")
         return
     
@@ -255,9 +255,9 @@ def main():
             # Delete and recreate collection
             retriever.client.delete_collection("chalmers_courses")
             retriever.collection = retriever.client.create_collection("chalmers_courses")
-            print("✅ Collection recreated")
+            print("[OK] Collection recreated")
         else:
-            print("✅ Using existing collection")
+            print("[OK] Using existing collection")
             test_retrieval(retriever)
             return
     
@@ -274,7 +274,7 @@ def main():
     test_retrieval(retriever)
     
     print("\n" + "=" * 60)
-    print("✅ Retrieval System Setup Complete!")
+    print("[OK] Retrieval System Setup Complete!")
     print("=" * 60)
     print(f"\nVector database saved to: {db_directory}")
     print(f"Total courses indexed: {retriever.get_collection_size()}")

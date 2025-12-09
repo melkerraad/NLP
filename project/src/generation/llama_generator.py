@@ -8,14 +8,20 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables from .env file (explicitly from project root)
+project_root = Path(__file__).parent.parent.parent
+env_path = project_root / ".env"
+load_dotenv(dotenv_path=env_path)
 
 
 class LlamaRAGGenerator:
-    """Generation system for RAG responses using Llama 3.2 3B locally."""
+    """Generation system for RAG responses using Llama 3.2 locally."""
     
     def __init__(
         self,
-        model_name: str = "meta-llama/Llama-3.2-3B-Instruct",
+        model_name: str = "meta-llama/Llama-3.2-1B-Instruct",
         device: Optional[str] = None,
         hf_token: Optional[str] = None,
         use_alternative_if_gated: bool = True
@@ -43,29 +49,42 @@ class LlamaRAGGenerator:
             hf_token = os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACE_TOKEN")
         
         if hf_token is None:
-            print("⚠️  Warning: No Hugging Face token found.")
+            print("[WARNING] No Hugging Face token found.")
             print("   Set HF_TOKEN environment variable or pass hf_token parameter.")
             print("   You can get a free token at: https://huggingface.co/settings/tokens")
         
         # Try to load model, fallback to alternative if gated
         try:
+            print("Loading tokenizer...")
             # Load tokenizer
             self.tokenizer = AutoTokenizer.from_pretrained(
                 model_name,
                 token=hf_token
             )
+            print("Tokenizer loaded. Loading model (this may take a while on CPU)...")
             
-            # Load model
-            self.model = AutoModelForCausalLM.from_pretrained(
-                model_name,
-                torch_dtype=torch.float16 if device == "cuda" else torch.float32,
-                device_map="auto" if device == "cuda" else None,
-                token=hf_token
-            )
+            # Load model with appropriate settings
+            if device == "cuda":
+                self.model = AutoModelForCausalLM.from_pretrained(
+                    model_name,
+                    dtype=torch.float16,
+                    device_map="auto",
+                    token=hf_token
+                )
+            else:
+                # For CPU, use float32 and load directly
+                self.model = AutoModelForCausalLM.from_pretrained(
+                    model_name,
+                    torch_dtype=torch.float32,
+                    token=hf_token
+                )
+                self.model = self.model.to("cpu")
+            
+            print("Model loaded successfully!")
         except Exception as e:
             if "gated" in str(e).lower() or "403" in str(e) or "access" in str(e).lower():
                 if use_alternative_if_gated:
-                    print(f"\n⚠️  Access denied to {model_name}")
+                    print(f"\n[WARNING] Access denied to {model_name}")
                     print("   Trying smaller alternative: Qwen/Qwen2.5-0.5B-Instruct (~1GB)")
                     print("   (To use Llama, request access at: https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct)")
                     print("   (For better quality, try: microsoft/Phi-3-mini-4k-instruct - needs ~5GB)\n")
@@ -75,11 +94,18 @@ class LlamaRAGGenerator:
                     self.model_name = model_name
                     
                     self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-                    self.model = AutoModelForCausalLM.from_pretrained(
-                        model_name,
-                        torch_dtype=torch.float16 if device == "cuda" else torch.float32,
-                        device_map="auto" if device == "cuda" else None
-                    )
+                    if device == "cuda":
+                        self.model = AutoModelForCausalLM.from_pretrained(
+                            model_name,
+                            dtype=torch.float16,
+                            device_map="auto"
+                        )
+                    else:
+                        self.model = AutoModelForCausalLM.from_pretrained(
+                            model_name,
+                            torch_dtype=torch.float32
+                        )
+                        self.model = self.model.to("cpu")
                 else:
                     raise Exception(
                         f"Access denied to {model_name}. "
@@ -93,7 +119,7 @@ class LlamaRAGGenerator:
         
         self.model.eval()  # Set to evaluation mode
         
-        print(f"✅ Model loaded on {device}")
+        print(f"[OK] Model loaded on {device}")
         print(f"   Model: {model_name}")
     
     def build_prompt(self, query: str, context_docs: List[Dict]) -> str:
