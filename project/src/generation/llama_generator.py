@@ -119,6 +119,16 @@ class LlamaRAGGenerator:
         
         self.model.eval()  # Set to evaluation mode
         
+        # Compile model for faster inference (PyTorch 2.0+)
+        if device == "cuda" and hasattr(torch, "compile"):
+            try:
+                print("Compiling model for faster inference...")
+                self.model = torch.compile(self.model, mode="reduce-overhead")
+                print("[OK] Model compiled")
+            except Exception as e:
+                print(f"[WARNING] Could not compile model: {e}")
+                print("   Continuing without compilation...")
+        
         print(f"[OK] Model loaded on {device}")
         print(f"   Model: {model_name}")
     
@@ -188,7 +198,7 @@ Question: {query}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
         self,
         query: str,
         context_docs: List[Dict],
-        max_new_tokens: int = 500,
+        max_new_tokens: int = 200,
         temperature: float = 0.7,
         top_p: float = 0.9
     ) -> str:
@@ -197,7 +207,7 @@ Question: {query}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
         Args:
             query: User query
             context_docs: Retrieved context documents
-            max_new_tokens: Maximum tokens to generate
+            max_new_tokens: Maximum tokens to generate (default: 200 for faster generation)
             temperature: Sampling temperature (0.0-1.0)
             top_p: Nucleus sampling parameter
             
@@ -210,20 +220,24 @@ Question: {query}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
         # Tokenize
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
         
-        # Generate
+        # Generate - use greedy decoding for speed (set do_sample=False when temperature is low)
         with torch.no_grad():
             # Handle pad_token for different models
             pad_token_id = self.tokenizer.pad_token_id
             if pad_token_id is None:
                 pad_token_id = self.tokenizer.eos_token_id
             
+            # Use greedy decoding (faster) if temperature is very low, otherwise use sampling
+            use_sampling = temperature > 0.1
+            
             outputs = self.model.generate(
                 **inputs,
                 max_new_tokens=max_new_tokens,
-                temperature=temperature,
-                top_p=top_p,
-                do_sample=True,
-                pad_token_id=pad_token_id
+                temperature=temperature if use_sampling else None,
+                top_p=top_p if use_sampling else None,
+                do_sample=use_sampling,
+                pad_token_id=pad_token_id,
+                use_cache=True  # Enable KV cache for faster generation
             )
         
         # Decode response (only the newly generated part)
@@ -238,8 +252,8 @@ Question: {query}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
         self,
         query: str,
         context_docs: List[Dict],
-        max_new_tokens: int = 500,
-        temperature: float = 0.7
+        max_new_tokens: int = 200,
+        temperature: float = 0.1
     ) -> Dict:
         """Generate response with source citations.
         
