@@ -1,14 +1,14 @@
 #!/bin/bash
 #SBATCH --job-name=rag_test
-#SBATCH --gres=gpu:1
+#SBATCH --partition=short
+#SBATCH --gres=gpu:L40s:1
 #SBATCH --time=00:30:00
 #SBATCH --mem=8G
 #SBATCH --output=rag_output_%j.log
 #SBATCH --error=rag_error_%j.log
 
-# Note: If 'long' doesn't support GPU, check available GPU partitions:
-# sinfo -o "%P %G %l" | grep -i gpu
-# Common GPU partition names: gpu, gpu-short, gpu-long, etc.
+# Using short partition with L40s GPU
+# To check available GPU partitions: sinfo -o "%P %G %l %D %T" | grep -i gpu
 
 # Load required modules (adjust based on Minerva setup)
 # module load Python/3.10.4-GCCcore-11.3.0
