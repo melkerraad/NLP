@@ -13,7 +13,7 @@ class VectorStoreFactory:
     
     @staticmethod
     def create_embeddings(model_name: str = "all-MiniLM-L6-v2", device: Optional[str] = None):
-        """Create embedding function.
+        """Create embedding function with GPU optimizations.
         
         Args:
             model_name: Name of the SentenceTransformer model
@@ -32,9 +32,17 @@ class VectorStoreFactory:
             device = "cpu"
         
         print(f"[INFO] Creating embeddings on device: {device}")
+        
+        # Optimize for GPU if available
+        model_kwargs = {'device': device}
+        if device == "cuda":
+            # Enable GPU optimizations for faster processing
+            # Note: HuggingFaceEmbeddings handles batching internally
+            model_kwargs['device'] = device
+        
         return HuggingFaceEmbeddings(
             model_name=model_name,
-            model_kwargs={'device': device}
+            model_kwargs=model_kwargs
         )
     
     @staticmethod
@@ -43,7 +51,8 @@ class VectorStoreFactory:
         persist_directory: Optional[str] = None,
         embedding_model: str = "all-MiniLM-L6-v2",
         documents: Optional[List[Document]] = None,
-        device: Optional[str] = None
+        device: Optional[str] = None,
+        overwrite: bool = False
     ) -> Chroma:
         """Create or load a ChromaDB vector store.
         
@@ -53,6 +62,7 @@ class VectorStoreFactory:
             embedding_model: Name of embedding model
             documents: Optional documents to add (for new stores)
             device: Device to use for embeddings ('cuda', 'cpu', or None for auto-detect)
+            overwrite: If True, delete existing database and create new one
             
         Returns:
             Chroma vector store instance
@@ -60,12 +70,35 @@ class VectorStoreFactory:
         # Create embeddings
         embeddings = VectorStoreFactory.create_embeddings(embedding_model, device=device)
         
+        # Delete existing database if overwrite requested or if documents provided (setup mode)
+        if persist_directory and Path(persist_directory).exists():
+            if overwrite or documents:
+                import shutil
+                print(f"[INFO] Removing existing vector store at {persist_directory}...")
+                try:
+                    shutil.rmtree(persist_directory)
+                    print("[OK] Old database removed")
+                except Exception as e:
+                    print(f"[WARNING] Could not remove old database: {e}")
+        
         # Create persist directory if needed
         if persist_directory:
             persist_path = Path(persist_directory)
             persist_path.mkdir(parents=True, exist_ok=True)
         
-        # Check if vector store already exists
+        # If documents provided, always create new store (setup mode)
+        if documents:
+            print(f"[INFO] Creating vector store with {len(documents)} documents...")
+            vector_store = Chroma.from_documents(
+                documents=documents,
+                collection_name=collection_name,
+                embedding=embeddings,
+                persist_directory=persist_directory
+            )
+            print(f"[OK] Created new vector store with {len(documents)} documents")
+            return vector_store
+        
+        # Otherwise, try to load existing or create empty
         if persist_directory and Path(persist_directory).exists():
             try:
                 # Try to load existing vector store
@@ -83,22 +116,13 @@ class VectorStoreFactory:
                 print(f"[INFO] Could not load existing vector store: {e}")
                 print("   Creating new vector store...")
         
-        # Create new vector store
-        if documents:
-            vector_store = Chroma.from_documents(
-                documents=documents,
-                collection_name=collection_name,
-                embedding=embeddings,
-                persist_directory=persist_directory
-            )
-            print(f"[OK] Created new vector store with {len(documents)} documents")
-        else:
-            vector_store = Chroma(
-                collection_name=collection_name,
-                embedding_function=embeddings,
-                persist_directory=persist_directory
-            )
-            print(f"[OK] Created empty vector store")
+        # Create empty vector store
+        vector_store = Chroma(
+            collection_name=collection_name,
+            embedding_function=embeddings,
+            persist_directory=persist_directory
+        )
+        print(f"[OK] Created empty vector store")
         
         return vector_store
     

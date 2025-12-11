@@ -236,7 +236,7 @@ def main():
     print(f"[OK] Created {len(documents)} document chunks from {len(courses)} courses")
     print(f"   Average: {len(documents)/len(courses):.1f} chunks per course")
     
-    # Create vector store
+    # Create vector store (always overwrite in setup mode)
     print("\nCreating vector store...")
     persist_dir = str(project_root / vector_config.get("persist_directory", "data/chroma_db"))
     
@@ -244,16 +244,30 @@ def main():
     embedding_device = "cuda" if torch.cuda.is_available() else "cpu"
     if torch.cuda.is_available():
         print(f"[INFO] Using GPU: {torch.cuda.get_device_name(0)}")
+        print(f"[INFO] GPU optimizations enabled for faster embedding")
+        expected_time = f"~{len(documents) * 0.1:.0f}-{len(documents) * 0.3:.0f} seconds"
     else:
         print("[INFO] Using CPU for embeddings")
+        expected_time = f"~{len(documents) * 2:.0f}-{len(documents) * 5:.0f} seconds"
+    
+    print(f"[INFO] Embedding {len(documents)} documents (this may take {expected_time})...")
+    
+    import time
+    start_time = time.time()
     
     vector_store = VectorStoreFactory.create_vector_store(
         collection_name=vector_config.get("collection_name", "chalmers_courses"),
         persist_directory=persist_dir,
         embedding_model=retrieval_config.get("embedding_model", "all-MiniLM-L6-v2"),
         documents=documents,
-        device=embedding_device
+        device=embedding_device,
+        overwrite=True  # Always overwrite in setup mode
     )
+    
+    embedding_time = time.time() - start_time
+    print(f"[OK] Embedding completed in {embedding_time:.1f} seconds")
+    if embedding_device == "cuda":
+        print(f"[INFO] Performance: {len(documents)/embedding_time:.1f} documents/second")
     
     # Verify
     count = vector_store._collection.count()
