@@ -18,6 +18,13 @@ class QueryAnalyzer:
     COMPARISON_KEYWORDS = ['compare', 'difference', 'versus', 'vs', 'between']
     COMPULSORY_KEYWORDS = ['compulsory', 'mandatory', 'required', 'must take', 'have to']
     
+    # Section-specific keywords for query enhancement
+    PREREQUISITE_KEYWORDS = ['prerequisite', 'prerequisit', 'required course', 'required courses', 'what do i need']
+    LEARNING_OUTCOME_KEYWORDS = ['learning outcome', 'learning outcomes', 'what will i learn', 'what can i do']
+    EXAM_KEYWORDS = ['examination', 'exam', 'exams', 'how is it examined', 'grading', 'assessment']
+    CONTENT_KEYWORDS = ['content', 'what is covered', 'what topics', 'syllabus', 'curriculum']
+    ORGANISATION_KEYWORDS = ['organisation', 'organization', 'how is it organized', 'structure', 'format']
+    
     @classmethod
     def extract_course_codes(cls, query: str) -> List[str]:
         """Extract course codes from query.
@@ -53,6 +60,13 @@ class QueryAnalyzer:
         is_list_query = any(keyword in query_lower for keyword in cls.LIST_KEYWORDS)
         is_comparison_query = any(keyword in query_lower for keyword in cls.COMPARISON_KEYWORDS)
         
+        # Detect section-specific queries for query enhancement
+        is_prerequisite_query = any(keyword in query_lower for keyword in cls.PREREQUISITE_KEYWORDS)
+        is_learning_outcome_query = any(keyword in query_lower for keyword in cls.LEARNING_OUTCOME_KEYWORDS)
+        is_exam_query = any(keyword in query_lower for keyword in cls.EXAM_KEYWORDS)
+        is_content_query = any(keyword in query_lower for keyword in cls.CONTENT_KEYWORDS)
+        is_organisation_query = any(keyword in query_lower for keyword in cls.ORGANISATION_KEYWORDS)
+        
         # Determine query type
         if course_codes:
             if len(course_codes) == 1:
@@ -66,20 +80,30 @@ class QueryAnalyzer:
         else:
             query_type = 'general'
         
-        # Determine suggested K (limited to 3 for better focus)
+        # Determine suggested K (increased to 5 for better coverage)
+        # Increase k further for section-specific queries to ensure relevant sections are retrieved
+        base_k = 5
         if query_type == 'specific':
-            suggested_k = 3  # Get top chunks from the specific course
+            if is_prerequisite_query or is_learning_outcome_query or is_exam_query:
+                suggested_k = 8  # More chunks for section-specific queries
+            else:
+                suggested_k = base_k
         elif query_type == 'comparison':
-            suggested_k = 3  # Limit to 3 for comparison
+            suggested_k = base_k
         elif query_type == 'list' or is_compulsory_query:
-            suggested_k = 3  # Limit to 3 for lists
+            suggested_k = base_k
         else:
-            suggested_k = 3  # Default: always 3
+            suggested_k = base_k
         
         return {
             'course_codes': course_codes,
             'query_type': query_type,
             'is_compulsory_query': is_compulsory_query,
+            'is_prerequisite_query': is_prerequisite_query,
+            'is_learning_outcome_query': is_learning_outcome_query,
+            'is_exam_query': is_exam_query,
+            'is_content_query': is_content_query,
+            'is_organisation_query': is_organisation_query,
             'suggested_k': suggested_k
         }
 
@@ -90,7 +114,7 @@ class SmartRetriever:
     def __init__(
         self,
         vector_store: Chroma,
-        base_k: int = 3,
+        base_k: int = 5,
         max_k: int = 30,
         min_k: int = 1
     ):
@@ -141,7 +165,15 @@ class SmartRetriever:
             # For compulsory queries, we increase K but still use semantic search
             # to find courses that mention compulsory in their content
         
-        # Perform retrieval
+        # Analyze query for section-specific keywords
+        analysis = self.analyzer.analyze_query(query)
+        is_prerequisite_query = analysis.get('is_prerequisite_query', False)
+        is_learning_outcome_query = analysis.get('is_learning_outcome_query', False)
+        is_exam_query = analysis.get('is_exam_query', False)
+        is_content_query = analysis.get('is_content_query', False)
+        is_organisation_query = analysis.get('is_organisation_query', False)
+        
+        # Perform retrieval with hybrid search (semantic + keyword boosting)
         if filter_dict:
             # Use metadata filtering - ChromaDB filter syntax: {'field': 'value'}
             try:
@@ -153,31 +185,41 @@ class SmartRetriever:
                         # Use ChromaDB metadata filter to get chunks from specific courses
                         # This ensures we get chunks from the right course(s)
                         try:
-                            # Try using ChromaDB's where filter
-                            # Format: {'course_code': {'$in': ['DAT441', 'DAT695']}}
+                            # Retrieve more documents for hybrid search (semantic + keyword matching)
+                            # Get 2x k for semantic search, then boost/reorder by keywords
+                            search_k = k * 2 if (is_prerequisite_query or is_learning_outcome_query or 
+                                                 is_exam_query or is_content_query or is_organisation_query) else k
+                            
                             results = self.vector_store.similarity_search(
                                 query,
-                                k=k,
+                                k=search_k,
                                 filter={'course_code': {'$in': course_codes}}
                             )
                         except Exception as filter_error:
                             # Fallback: post-filter after getting more results
                             print(f"[INFO] Using post-filtering fallback: {filter_error}")
-                            results = self.vector_store.similarity_search(query, k=k * 2)
+                            search_k = k * 2 if (is_prerequisite_query or is_learning_outcome_query or 
+                                                 is_exam_query or is_content_query or is_organisation_query) else k
+                            results = self.vector_store.similarity_search(query, k=search_k * 2)
                             # Post-filter by course_code
                             filtered_results = [
                                 doc for doc in results 
                                 if doc.metadata.get('course_code', '').upper() in [c.upper() for c in course_codes]
                             ]
-                            results = filtered_results[:k]
+                            results = filtered_results[:search_k]
                         
-                        # Prioritize metadata chunks if available (they contain prerequisites, program info, etc.)
-                        metadata_chunks = [doc for doc in results if doc.metadata.get('chunk_type') == 'metadata']
-                        description_chunks = [doc for doc in results if doc.metadata.get('chunk_type') == 'description']
+                        # Hybrid search: Boost sections that match query keywords
+                        results = self._boost_relevant_sections(
+                            results, 
+                            is_prerequisite_query, 
+                            is_learning_outcome_query,
+                            is_exam_query,
+                            is_content_query,
+                            is_organisation_query
+                        )
                         
-                        # Reorder: metadata chunks first, then description chunks
-                        if metadata_chunks:
-                            results = metadata_chunks + description_chunks[:k - len(metadata_chunks)]
+                        # Take top k after boosting
+                        results = results[:k]
                     else:
                         results = self.vector_store.similarity_search(query, k=k)
                 else:
@@ -192,10 +234,90 @@ class SmartRetriever:
                 print(f"[WARNING] Filter failed, using standard search: {e}")
                 results = self.vector_store.similarity_search(query, k=k)
         else:
-            # Standard semantic search
-            results = self.vector_store.similarity_search(query, k=k)
+            # Standard semantic search with keyword boosting
+            search_k = k * 2 if (is_prerequisite_query or is_learning_outcome_query or 
+                                 is_exam_query or is_content_query or is_organisation_query) else k
+            results = self.vector_store.similarity_search(query, k=search_k)
+            
+            # Boost relevant sections
+            results = self._boost_relevant_sections(
+                results,
+                is_prerequisite_query,
+                is_learning_outcome_query,
+                is_exam_query,
+                is_content_query,
+                is_organisation_query
+            )
+            
+            # Take top k after boosting
+            results = results[:k]
         
         return results
+    
+    def _boost_relevant_sections(
+        self,
+        results: List[Document],
+        is_prerequisite_query: bool,
+        is_learning_outcome_query: bool,
+        is_exam_query: bool,
+        is_content_query: bool,
+        is_organisation_query: bool
+    ) -> List[Document]:
+        """Boost documents with matching section names based on query keywords.
+        
+        This implements hybrid search by combining semantic similarity with keyword matching.
+        
+        Args:
+            results: List of retrieved documents
+            is_prerequisite_query: Whether query mentions prerequisites
+            is_learning_outcome_query: Whether query mentions learning outcomes
+            is_exam_query: Whether query mentions exams
+            is_content_query: Whether query mentions content
+            is_organisation_query: Whether query mentions organisation
+            
+        Returns:
+            Reordered list with matching sections boosted to the top
+        """
+        if not (is_prerequisite_query or is_learning_outcome_query or 
+                is_exam_query or is_content_query or is_organisation_query):
+            return results
+        
+        # Separate documents into matching and non-matching
+        matching_docs = []
+        non_matching_docs = []
+        
+        for doc in results:
+            section_name = doc.metadata.get('section_name', '').lower()
+            section_name_original = doc.metadata.get('section_name_original', '').lower()
+            chunk_type = doc.metadata.get('chunk_type', '')
+            
+            is_match = False
+            
+            # Check if section matches query keywords (can match multiple keywords)
+            if is_prerequisite_query:
+                if 'prerequisite' in section_name or 'prerequisite' in section_name_original:
+                    is_match = True
+            if is_learning_outcome_query:
+                if 'learning outcome' in section_name or 'learning outcome' in section_name_original:
+                    is_match = True
+            if is_exam_query:
+                if 'examination' in section_name or 'exam' in section_name or 'examination' in section_name_original:
+                    is_match = True
+            if is_content_query:
+                if 'content' in section_name or 'content' in section_name_original:
+                    is_match = True
+            if is_organisation_query:
+                if 'organisation' in section_name or 'organization' in section_name or \
+                   'organisation' in section_name_original or 'organization' in section_name_original:
+                    is_match = True
+            
+            if is_match:
+                matching_docs.append(doc)
+            else:
+                non_matching_docs.append(doc)
+        
+        # Return matching docs first, then non-matching (preserving semantic order within each group)
+        return matching_docs + non_matching_docs
     
     def retrieve_with_scores(
         self,
