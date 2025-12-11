@@ -66,17 +66,15 @@ class QueryAnalyzer:
         else:
             query_type = 'general'
         
-        # Determine suggested K
-        # For specific course queries with chunked documents, we need multiple chunks
-        # (metadata chunk + multiple description chunks)
+        # Determine suggested K (limited to 3 for better focus)
         if query_type == 'specific':
-            suggested_k = 10  # Get multiple chunks from the specific course (metadata + description chunks)
+            suggested_k = 3  # Get top chunks from the specific course
         elif query_type == 'comparison':
-            suggested_k = min(len(course_codes) * 5, 15) if course_codes else 5  # Multiple chunks per course
+            suggested_k = 3  # Limit to 3 for comparison
         elif query_type == 'list' or is_compulsory_query:
-            suggested_k = 20  # Need many courses for lists
+            suggested_k = 3  # Limit to 3 for lists
         else:
-            suggested_k = 5  # Default (increased for chunked documents)
+            suggested_k = 3  # Default: always 3
         
         return {
             'course_codes': course_codes,

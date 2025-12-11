@@ -134,24 +134,13 @@ class RAGChatbotUI:
                 if timing_info:
                     sources_str += f" | {' | '.join(timing_info)}"
             
-            # Format context documents for display
-            context_parts = []
+            # Format context documents for display (grouped by course)
             if retrieved_docs:
-                context_parts.append(f"Retrieved {len(retrieved_docs)} document(s):\n")
-                for i, doc in enumerate(retrieved_docs, 1):
-                    course_code = doc.metadata.get('course_code', 'Unknown')
-                    course_name = doc.metadata.get('course_name', '')
-                    content = doc.page_content
-                    
-                    # Truncate content if too long (first 800 chars)
-                    content_preview = content[:800] + "..." if len(content) > 800 else content
-                    
-                    context_parts.append(f"\n[{i}] {course_code}: {course_name}")
-                    context_parts.append(f"Content: {content_preview}")
+                # Use the same formatting function as the RAG chain
+                from src.generation.prompt_templates import format_docs
+                context_str = format_docs(retrieved_docs)
             else:
-                context_parts.append("No documents retrieved.")
-            
-            context_str = "\n".join(context_parts)
+                context_str = "No documents retrieved."
             
             return answer, sources_str, context_str
             

@@ -12,7 +12,7 @@ model:
 # Retrieval settings
 retrieval:
   top_k: 3  # Default number of documents (used as base for dynamic K)
-  max_k: 30  # Maximum documents for list queries
+  max_k: 3  # Maximum documents (limit to 3 for better focus)
   min_k: 1   # Minimum documents
   embedding_model: "all-MiniLM-L6-v2"  # SentenceTransformer model
   # Dynamic K settings:
