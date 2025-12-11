@@ -11,8 +11,15 @@ model:
 
 # Retrieval settings
 retrieval:
-  top_k: 3  # Number of documents to retrieve
+  top_k: 3  # Default number of documents (used as base for dynamic K)
+  max_k: 30  # Maximum documents for list queries
+  min_k: 1   # Minimum documents
   embedding_model: "all-MiniLM-L6-v2"  # SentenceTransformer model
+  # Dynamic K settings:
+  # - Specific course queries (e.g., "Is DAT450 compulsory?"): k=1
+  # - Comparison queries: k=5-10
+  # - List queries (e.g., "all compulsory courses"): k=20
+  # - General queries: k=3 (default)
 
 # Vector store settings
 vector_store:

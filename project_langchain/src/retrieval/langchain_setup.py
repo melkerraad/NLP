@@ -54,9 +54,11 @@ def courses_to_documents(courses: List[Dict]) -> List[Document]:
         if course_code or course_name:
             course_text_parts.append(f"Course: {course_code} - {course_name}")
         
-        # Add course type if available
-        if course.get('course_type'):
-            course_text_parts.append(f"Type: {course['course_type']}")
+        # Add course type prominently (make it more explicit for better retrieval)
+        course_type = course.get('course_type', '')
+        if course_type:
+            # Make it very explicit for better semantic matching with queries about compulsory/elective
+            course_text_parts.append(f"This course is {course_type}. Course type: {course_type}.")
         
         # Add description (main content)
         if course.get('description'):

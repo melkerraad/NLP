@@ -12,6 +12,7 @@ sys.path.insert(0, str(project_root))
 
 from src.utils.config_loader import load_config
 from src.retrieval.vector_store import VectorStoreFactory
+from src.retrieval.smart_retriever import SmartRetriever, SmartRetrieverWrapper
 from src.generation.llm_factory import create_llm_from_config
 from src.generation.rag_chain import create_rag_chain
 from src.utils.timing import TimingTracker
@@ -60,9 +61,20 @@ class RAGChatbotUI:
             device=embedding_device
         )
         
-        # Create retriever
-        top_k = retrieval_config.get("top_k", 3)
-        self.retriever = self.vector_store.as_retriever(search_kwargs={"k": top_k})
+        # Create smart retriever with dynamic K
+        base_k = retrieval_config.get("top_k", 3)
+        max_k = retrieval_config.get("max_k", 30)
+        min_k = retrieval_config.get("min_k", 1)
+        
+        smart_retriever = SmartRetriever(
+            vector_store=self.vector_store,
+            base_k=base_k,
+            max_k=max_k,
+            min_k=min_k
+        )
+        
+        # Wrap for LangChain compatibility
+        self.retriever = SmartRetrieverWrapper(smart_retriever)
         
         # Create LLM
         print("Loading LLM...")
