@@ -307,38 +307,38 @@ class SmartRetriever:
                             search_k = k * 2 if use_score_based_boost else k
                             
                             if use_score_based_boost:
-                            # Use similarity_search_with_score to get scores for re-ranking
-                            results_with_scores = self.vector_store.similarity_search_with_score(
-                                query,
-                                k=search_k,
-                                filter={'course_code': {'$in': course_codes}}
-                            )
-                            # Filter by relevance threshold
-                            results_with_scores = self._filter_by_relevance(results_with_scores)
-                            # Boost matching sections and re-rank
-                            results, scores = self._boost_and_rerank_with_scores(
-                                results_with_scores,
-                                is_prerequisite_query,
-                                is_learning_outcome_query,
-                                is_exam_query,
-                                is_content_query,
-                                is_organisation_query
-                            )
-                            results = results[:k]
-                            scores = scores[:k]
-                            has_good_info = any(score <= self.max_similarity_distance for score in scores) if scores else False
-                            return results, scores, has_good_info
-                        else:
-                            results_with_scores = self.vector_store.similarity_search_with_score(
-                                query,
-                                k=search_k,
-                                filter={'course_code': {'$in': course_codes}}
-                            )
-                            results_with_scores = self._filter_by_relevance(results_with_scores)
-                            results = [doc for doc, _ in results_with_scores[:k]]
-                            scores = [score for _, score in results_with_scores[:k]]
-                            has_good_info = any(score <= self.max_similarity_distance for score in scores) if scores else False
-                            return results, scores, has_good_info
+                                # Use similarity_search_with_score to get scores for re-ranking
+                                results_with_scores = self.vector_store.similarity_search_with_score(
+                                    query,
+                                    k=search_k,
+                                    filter={'course_code': {'$in': course_codes}}
+                                )
+                                # Filter by relevance threshold
+                                results_with_scores = self._filter_by_relevance(results_with_scores)
+                                # Boost matching sections and re-rank
+                                results, scores = self._boost_and_rerank_with_scores(
+                                    results_with_scores,
+                                    is_prerequisite_query,
+                                    is_learning_outcome_query,
+                                    is_exam_query,
+                                    is_content_query,
+                                    is_organisation_query
+                                )
+                                results = results[:k]
+                                scores = scores[:k]
+                                has_good_info = any(score <= self.max_similarity_distance for score in scores) if scores else False
+                                return results, scores, has_good_info
+                            else:
+                                results_with_scores = self.vector_store.similarity_search_with_score(
+                                    query,
+                                    k=search_k,
+                                    filter={'course_code': {'$in': course_codes}}
+                                )
+                                results_with_scores = self._filter_by_relevance(results_with_scores)
+                                results = [doc for doc, _ in results_with_scores[:k]]
+                                scores = [score for _, score in results_with_scores[:k]]
+                                has_good_info = any(score <= self.max_similarity_distance for score in scores) if scores else False
+                                return results, scores, has_good_info
                         except Exception as filter_error:
                             # Fallback: post-filter after getting more results
                             print(f"[INFO] Using post-filtering fallback: {filter_error}")
