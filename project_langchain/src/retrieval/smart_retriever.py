@@ -237,14 +237,15 @@ class SmartRetriever:
 class SmartRetrieverWrapper(BaseRetriever):
     """LangChain-compatible wrapper for SmartRetriever."""
     
+    smart_retriever: SmartRetriever  # Declare as a Pydantic field
+    
     def __init__(self, smart_retriever: SmartRetriever):
         """Initialize wrapper.
         
         Args:
             smart_retriever: SmartRetriever instance
         """
-        super().__init__()
-        self.smart_retriever = smart_retriever
+        super().__init__(smart_retriever=smart_retriever)
     
     def _get_relevant_documents(self, query: str) -> List[Document]:
         """Get relevant documents for query.
