@@ -19,6 +19,30 @@ from src.retrieval.vector_store import VectorStoreFactory
 from src.utils.config_loader import load_config
 
 
+def fix_text_spacing(text: str) -> str:
+    """Fix spacing issues in text (add spaces after punctuation).
+    
+    Args:
+        text: Text with potential spacing issues
+        
+    Returns:
+        Text with proper spacing
+    """
+    # Add space after periods, commas, colons, semicolons if followed by a letter
+    text = re.sub(r'([.,:;])([A-Za-z])', r'\1 \2', text)
+    
+    # Add space after closing parentheses if followed by a letter
+    text = re.sub(r'\)([A-Za-z])', r') \1', text)
+    
+    # Fix multiple spaces
+    text = re.sub(r' +', ' ', text)
+    
+    # Fix spaces before punctuation (remove them)
+    text = re.sub(r' ([.,:;!?])', r'\1', text)
+    
+    return text.strip()
+
+
 def load_courses(data_path: Path) -> List[Dict]:
     """Load cleaned course data from JSON file.
     
@@ -165,14 +189,22 @@ def courses_to_documents(courses: List[Dict], chunk_size: int = 500, chunk_overl
                 if not content or len(content.strip()) < 10:
                     continue  # Skip empty sections
                 
-                # Build section text with course context
-                section_text = f"Course: {course_code} - {course_name}\n"
-                if course_type:
-                    section_text += f"This course is {course_type}.\n\n"
-                section_text += f"{section_name_original}:\n{content}"
+                # Fix spacing issues in content
+                content = fix_text_spacing(content)
                 
-                # If section is very long, split it further
-                if len(section_text) > chunk_size * 1.5:  # If significantly longer than chunk_size
+                # Build section text with section name prominently at the start
+                section_text = f"Section: {section_name_original}\n\n"
+                section_text += f"Course: {course_code} - {course_name}\n"
+                if course_type:
+                    section_text += f"Course Type: {course_type}\n\n"
+                section_text += f"{content}"
+                
+                # Only split very long sections (e.g., >2000 chars) to preserve semantic boundaries
+                # Most sections should remain intact as single documents
+                max_section_size = 2000  # Increased threshold to preserve more sections
+                
+                if len(section_text) > max_section_size:
+                    # Split only if absolutely necessary, using sentence-aware splitting
                     section_chunks = text_splitter.split_text(section_text)
                     
                     for i, chunk_text in enumerate(section_chunks):
@@ -189,7 +221,7 @@ def courses_to_documents(courses: List[Dict], chunk_size: int = 500, chunk_overl
                         )
                         documents.append(doc)
                 else:
-                    # Section fits in one chunk
+                    # Section fits in one chunk - keep it intact (preserves semantic meaning)
                     metadata = base_metadata.copy()
                     metadata['chunk_type'] = 'section'
                     metadata['section_name'] = section_name
