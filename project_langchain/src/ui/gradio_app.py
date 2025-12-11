@@ -97,10 +97,10 @@ class RAGChatbotUI:
             query: User query
             
         Returns:
-            Tuple of (answer, sources_string)
+            Tuple of (answer, sources_string, context_string)
         """
         if not query or not query.strip():
-            return "Please enter a question.", ""
+            return "Please enter a question.", "", ""
         
         try:
             # Time retrieval
@@ -134,14 +134,33 @@ class RAGChatbotUI:
                 if timing_info:
                     sources_str += f" | {' | '.join(timing_info)}"
             
-            return answer, sources_str
+            # Format context documents for display
+            context_parts = []
+            if retrieved_docs:
+                context_parts.append(f"Retrieved {len(retrieved_docs)} document(s):\n")
+                for i, doc in enumerate(retrieved_docs, 1):
+                    course_code = doc.metadata.get('course_code', 'Unknown')
+                    course_name = doc.metadata.get('course_name', '')
+                    content = doc.page_content
+                    
+                    # Truncate content if too long (first 800 chars)
+                    content_preview = content[:800] + "..." if len(content) > 800 else content
+                    
+                    context_parts.append(f"\n[{i}] {course_code}: {course_name}")
+                    context_parts.append(f"Content: {content_preview}")
+            else:
+                context_parts.append("No documents retrieved.")
+            
+            context_str = "\n".join(context_parts)
+            
+            return answer, sources_str, context_str
             
         except Exception as e:
             error_msg = f"Error processing query: {str(e)}"
             print(error_msg)
             import traceback
             traceback.print_exc()
-            return error_msg, ""
+            return error_msg, "", ""
     
     def create_interface(self) -> gr.Blocks:
         """Create Gradio interface.
@@ -186,18 +205,26 @@ class RAGChatbotUI:
                     interactive=False
                 )
             
+            with gr.Row():
+                context_output = gr.Textbox(
+                    label="Retrieved Context",
+                    lines=15,
+                    interactive=False,
+                    placeholder="The retrieved documents used to generate the answer will appear here..."
+                )
+            
             # Connect components
             submit_btn.click(
                 fn=self._query_rag,
                 inputs=query_input,
-                outputs=[answer_output, sources_output]
+                outputs=[answer_output, sources_output, context_output]
             )
             
             # Allow Enter key to submit
             query_input.submit(
                 fn=self._query_rag,
                 inputs=query_input,
-                outputs=[answer_output, sources_output]
+                outputs=[answer_output, sources_output, context_output]
             )
         
         return interface
