@@ -1,10 +1,11 @@
 """RAG chain builder for modular chain construction."""
 
-from typing import Optional, Callable, Any
+from typing import Optional, Callable, Any, List
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate, ChatPromptTemplate
 from langchain_core.retrievers import BaseRetriever
+from langchain_core.documents import Document
 
 from src.generation.prompt_templates import PromptTemplateManager, format_docs
 
@@ -75,18 +76,27 @@ class RAGChainBuilder:
         """
         return self.chain.invoke(query)
     
-    def invoke_with_sources(self, query: str, has_good_info: bool = True) -> dict:
+    def invoke_with_sources(
+        self, 
+        query: str, 
+        has_good_info: bool = True, 
+        retrieved_docs: Optional[List[Document]] = None
+    ) -> dict:
         """Invoke the RAG chain and include source information.
         
         Args:
             query: User query string
             has_good_info: Whether retrieved documents have good relevance scores
+            retrieved_docs: Optional pre-retrieved documents (to avoid duplicate retrieval)
             
         Returns:
             Dictionary with 'answer', 'context', 'question', and 'sources' keys
         """
+        # Use provided documents or retrieve new ones
+        if retrieved_docs is None:
+            retrieved_docs = self.retriever.invoke(query)
+        
         # Get sources from retrieved documents
-        retrieved_docs = self.retriever.invoke(query)
         sources = []
         for doc in retrieved_docs:
             course_code = doc.metadata.get('course_code', '')
