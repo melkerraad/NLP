@@ -272,8 +272,19 @@ def main():
     else:
         # If path starts with ../, resolve from project_root's parent
         if courses_file_path.startswith("../"):
-            # Go up from project_langchain to parent directory, then follow the rest of the path
-            courses_file = (project_root.parent / courses_file_path).resolve()
+            # Remove the ../ prefix
+            relative_path = courses_file_path[3:]  # Remove "../"
+            
+            # project_root is project_langchain (e.g., .../NLP/project_langchain)
+            # project_root.parent should be NLP directory
+            # But we need to be careful with resolve() as it follows symlinks
+            parent_dir = project_root.parent
+            
+            # Build the path manually to avoid symlink issues
+            courses_file = parent_dir / relative_path
+            
+            # Use absolute() instead of resolve() to avoid following symlinks
+            courses_file = courses_file.absolute()
         else:
             # Relative to project_root (project_langchain)
             courses_file = (project_root / courses_file_path).resolve()
@@ -283,7 +294,18 @@ def main():
         print(f"[ERROR] Courses file not found: {courses_file}")
         print(f"   Expected at: {courses_file}")
         print(f"   Project root: {project_root}")
-        print("   Run preprocessing script first!")
+        print(f"   Project root parent: {project_root.parent}")
+        print(f"   Config path: {courses_file_path}")
+        # Try to find the file
+        possible_locations = [
+            project_root / "data/processed/courses_clean.json",
+            project_root.parent / "project/data/processed/courses_clean.json",
+        ]
+        print("\n   Checking possible locations:")
+        for loc in possible_locations:
+            exists = "✓ EXISTS" if loc.exists() else "✗ NOT FOUND"
+            print(f"     {exists}: {loc}")
+        print("\n   Run preprocessing script first!")
         return
     
     # Load courses
