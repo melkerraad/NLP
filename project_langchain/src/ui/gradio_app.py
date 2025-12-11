@@ -14,6 +14,7 @@ from src.utils.config_loader import load_config
 from src.retrieval.vector_store import VectorStoreFactory
 from src.generation.llm_factory import create_llm_from_config
 from src.generation.rag_chain import create_rag_chain
+from src.utils.timing import TimingTracker
 
 
 class RAGChatbotUI:
