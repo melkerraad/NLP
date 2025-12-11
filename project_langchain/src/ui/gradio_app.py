@@ -109,13 +109,13 @@ class RAGChatbotUI:
         try:
             # Time retrieval
             with self.tracker.time_operation("retrieval"):
-                # Get documents with metadata about information quality
-                retrieved_docs, scores, has_good_info = self.retriever.retrieve_with_metadata(query)
+                # Get documents (skip has_good_info check for now)
+                retrieved_docs = self.retriever.invoke(query)
             
             # Time generation
             with self.tracker.time_operation("generation"):
-                # Pass has_good_info and retrieved_docs to the RAG chain to avoid duplicate retrieval
-                result = self.rag_chain.invoke_with_sources(query, has_good_info=has_good_info, retrieved_docs=retrieved_docs)
+                # Pass retrieved_docs to the RAG chain to avoid duplicate retrieval
+                result = self.rag_chain.invoke_with_sources(query, has_good_info=True, retrieved_docs=retrieved_docs)
             
             answer = result.get('answer', 'No answer generated.')
             sources = result.get('sources', [])

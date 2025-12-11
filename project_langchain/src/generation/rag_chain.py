@@ -103,13 +103,11 @@ class RAGChainBuilder:
             if course_code:
                 sources.append(course_code)
         
-        # If we don't have good information, modify the context to indicate this
-        if not has_good_info or not retrieved_docs:
-            # Create a modified context that tells the LLM we don't have good information
-            context = "No relevant course information was found for this query. The retrieved documents are not sufficiently relevant to answer the question."
-        else:
-            # Format documents normally
+        # Format documents normally (skip "I don't know" logic for now)
+        if retrieved_docs:
             context = self.format_docs_func(retrieved_docs)
+        else:
+            context = "No course information was retrieved for this query."
         
         # Format the prompt with context and question
         formatted_prompt = self.prompt.format(context=context, question=query)
@@ -124,11 +122,8 @@ class RAGChainBuilder:
             print(f"[WARNING] LLM invocation failed: {e}")
             answer = "I encountered an error while generating the answer."
         
-        # If we don't have good info, ensure the answer reflects this
-        if not has_good_info or not retrieved_docs:
-            answer_lower = answer.lower() if isinstance(answer, str) else str(answer).lower()
-            if "don't" not in answer_lower and "not available" not in answer_lower and "no information" not in answer_lower and "i don't know" not in answer_lower:
-                answer = "I don't have sufficient information to answer this question based on the available course data."
+        # Skip "I don't know" logic - always use the LLM's answer
+        # (Removed the forced "I don't know" response)
         
         result = {
             'answer': str(answer),
