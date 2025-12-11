@@ -1,6 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=setup_db
 #SBATCH --time=00:30:00
+#SBATCH --gres=gpu:L40s:1
 #SBATCH --mem=4G
 #SBATCH --output=setup_db_output_%j.log
 #SBATCH --error=setup_db_error_%j.log
