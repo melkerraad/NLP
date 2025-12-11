@@ -11,6 +11,8 @@ from typing import Dict, List, Any
 def remove_empty_fields(course: Dict[str, Any]) -> Dict[str, Any]:
     """Remove fields that are None, empty lists, or empty strings.
     
+    Also removes credits, prerequisites, and programs fields as they are not needed.
+    
     Args:
         course: Course dictionary
         
@@ -19,21 +21,40 @@ def remove_empty_fields(course: Dict[str, Any]) -> Dict[str, Any]:
     """
     cleaned = {}
     
+    # Fields to always remove
+    fields_to_remove = ['credits', 'prerequisites', 'programs']
+    
     for key, value in course.items():
+        # Skip fields we don't want
+        if key in fields_to_remove:
+            continue
+        
         # Skip None values
         if value is None:
             continue
         
-        # Skip empty lists
+        # Skip empty lists (except sections which might be empty but are important)
         if isinstance(value, list) and len(value) == 0:
-            continue
+            if key != 'sections':
+                continue
         
         # Skip empty strings
         if isinstance(value, str) and value.strip() == "":
             continue
         
-        # Keep all other values
-        cleaned[key] = value
+        # Clean sections if present
+        if key == 'sections' and isinstance(value, list):
+            # Remove sections with empty content
+            cleaned_sections = []
+            for section in value:
+                if isinstance(section, dict):
+                    content = section.get('content', '')
+                    if content and content.strip():
+                        cleaned_sections.append(section)
+            cleaned[key] = cleaned_sections if cleaned_sections else value
+        else:
+            # Keep all other values
+            cleaned[key] = value
     
     return cleaned
 
@@ -56,33 +77,6 @@ def clean_course_name(name: str) -> str:
     return name
 
 
-def fix_credits(credits: Any, course_code: str) -> Any:
-    """Try to fix credits if they look wrong.
-    
-    If credits is a large number (likely course code), return None.
-    Credits should typically be between 0.5 and 15 for Chalmers courses.
-    
-    Args:
-        credits: Credits value (could be wrong)
-        course_code: Course code for reference
-        
-    Returns:
-        Fixed credits or None if can't determine
-    """
-    if credits is None:
-        return None
-    
-    # If credits is a float/int
-    if isinstance(credits, (int, float)):
-        # If it's a reasonable credit value (0.5 to 30), keep it
-        if 0.5 <= credits <= 30:
-            return credits
-        # Otherwise, it's probably wrong (likely course code number)
-        return None
-    
-    return credits
-
-
 def clean_courses(input_path: Path, output_path: Path) -> None:
     """Clean course data by removing empty fields and fixing issues.
     
@@ -103,11 +97,7 @@ def clean_courses(input_path: Path, output_path: Path) -> None:
         if 'course_name' in course:
             course['course_name'] = clean_course_name(course['course_name'])
         
-        # Fix credits
-        if 'credits' in course:
-            course['credits'] = fix_credits(course['credits'], course.get('course_code', ''))
-        
-        # Remove empty/null fields
+        # Remove empty/null fields and unwanted fields (credits, prerequisites, programs)
         cleaned_course = remove_empty_fields(course)
         cleaned_courses.append(cleaned_course)
     

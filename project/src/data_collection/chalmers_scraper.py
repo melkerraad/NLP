@@ -23,6 +23,169 @@ from bs4 import BeautifulSoup
 import re
 
 
+def extract_sections_by_headers(soup: BeautifulSoup) -> List[Dict[str, str]]:
+    """Extract course sections based on h2 headers.
+    
+    Finds all h2 headers and extracts content until the next h2 or end of document.
+    This creates semantic chunks at the scraping stage.
+    
+    Args:
+        soup: BeautifulSoup object of the course page
+        
+    Returns:
+        List of dictionaries with 'section_name' and 'content' keys
+    """
+    sections = []
+    
+    # Find all h2 headers (these mark semantic sections)
+    h2_headers = soup.find_all('h2')
+    
+    if not h2_headers:
+        # Fallback: try h3 or other headers
+        h2_headers = soup.find_all(['h2', 'h3'])
+    
+    if not h2_headers:
+        # If no headers found, return empty sections
+        return sections
+    
+    # Extract content for each section
+    for i, header in enumerate(h2_headers):
+        section_name = header.get_text(strip=True)
+        
+        # Skip empty or very short headers
+        if not section_name or len(section_name) < 2:
+            continue
+        
+        # Find the parent container (usually a div or section)
+        # Then find all content between this header and the next header
+        parent = header.parent
+        
+        # Get all siblings after this header until we hit the next header
+        content_elements = []
+        current = header.next_sibling
+        
+        # Collect all elements until next h2/h3
+        while current:
+            # Stop if we hit another header
+            if hasattr(current, 'name') and current.name in ['h2', 'h3']:
+                break
+            
+            # Collect this element
+            if current:
+                content_elements.append(current)
+            
+            current = current.next_sibling if hasattr(current, 'next_sibling') else None
+        
+        # Extract text from all collected elements
+        content_parts = []
+        for elem in content_elements:
+            if hasattr(elem, 'get_text'):
+                text = elem.get_text(separator=' ', strip=True)
+                if text:
+                    content_parts.append(text)
+            elif isinstance(elem, str):
+                text = elem.strip()
+                if text:
+                    content_parts.append(text)
+        
+        # Combine content
+        content = ' '.join(content_parts).strip()
+        
+        # If we didn't get much content from siblings, try getting all text from parent
+        # and then extract the part after this header
+        if len(content) < 50 and parent:
+            parent_text = parent.get_text(separator=' ', strip=True)
+            # Find the position of this header's text in parent
+            header_pos = parent_text.find(section_name)
+            if header_pos != -1:
+                # Get text after header
+                after_header = parent_text[header_pos + len(section_name):].strip()
+                # Find next header in parent text (if any)
+                if i + 1 < len(h2_headers):
+                    next_header = h2_headers[i + 1].get_text(strip=True)
+                    next_pos = after_header.find(next_header)
+                    if next_pos != -1:
+                        after_header = after_header[:next_pos].strip()
+                content = after_header
+        
+        # Only add if there's substantial content
+        if content and len(content) > 10:
+            # Normalize section name (lowercase, remove special chars)
+            normalized_name = section_name.lower().strip()
+            
+            sections.append({
+                'section_name': normalized_name,
+                'section_name_original': section_name,
+                'content': content
+            })
+    
+    return sections
+
+
+def extract_program_info_from_sections(sections: List[Dict]) -> List[str]:
+    """Extract program information from course sections.
+    
+    Looks for sections that contain program information (usually in a specific section
+    or in the "In programmes" text).
+    
+    Args:
+        sections: List of section dictionaries
+        
+    Returns:
+        List of program strings
+    """
+    programs = []
+    
+    # Look for program information in sections
+    for section in sections:
+        content = section['content']
+        section_name = section['section_name'].lower()
+        
+        # Check if this section mentions programs
+        if 'programme' in section_name or 'program' in section_name:
+            # Extract program patterns
+            # Format: "MPDSC - Data Science and AI, Year 1(compulsory)"
+            pattern = r'([A-Z]{2,6})\s*-\s*([^,]+?),\s*Year\s*\d+\s*\(([^)]+)\)'
+            matches = re.finditer(pattern, content, re.IGNORECASE)
+            
+            for match in matches:
+                code = match.group(1)
+                name = match.group(2).strip()
+                course_type = match.group(3).strip()
+                # Extract year
+                year_match = re.search(r'Year\s*(\d+)', match.group(0))
+                year = year_match.group(1) if year_match else ""
+                
+                program_str = f"{code} - {name}, Year {year} ({course_type})"
+                programs.append(program_str)
+        
+        # Also check content for "In programmes" pattern
+        if 'in programmes' in content.lower():
+            # Extract everything after "In programmes" until next section marker
+            pattern = r'in programmes\s*([^E]+?)(?:examiner|$)'
+            matches = re.finditer(pattern, content, re.IGNORECASE | re.DOTALL)
+            for match in matches:
+                program_text = match.group(1).strip()
+                # Clean up
+                program_text = re.sub(r'\s+', ' ', program_text)
+                if program_text and len(program_text) > 10:
+                    # Try to parse individual programs
+                    # Look for patterns like "CODE - Name, Year X(type)"
+                    program_pattern = r'([A-Z]{2,6})\s*-\s*([^,]+?),\s*Year\s*\d+\s*\(([^)]+)\)'
+                    program_matches = re.finditer(program_pattern, program_text, re.IGNORECASE)
+                    for pm in program_matches:
+                        code = pm.group(1)
+                        name = pm.group(2).strip()
+                        course_type = pm.group(3).strip()
+                        year_match = re.search(r'Year\s*(\d+)', pm.group(0))
+                        year = year_match.group(1) if year_match else ""
+                        program_str = f"{code} - {name}, Year {year} ({course_type})"
+                        if program_str not in programs:
+                            programs.append(program_str)
+    
+    return programs
+
+
 def scrape_course_page(course_url: str, course_code: str = None, course_type: str = None) -> Optional[Dict]:
     """Scrape a single course page from Chalmers.
     
@@ -68,18 +231,8 @@ def scrape_course_page(course_url: str, course_code: str = None, course_type: st
                     course_name = text
                     break
         
-        # Extract description - look for common content areas
-        description = ""
-        desc_selectors = [
-            soup.find('div', class_=re.compile(r'description|content|syllabus')),
-            soup.find('section', class_=re.compile(r'description|content')),
-            soup.find('div', id=re.compile(r'description|content')),
-        ]
-        for desc_elem in desc_selectors:
-            if desc_elem:
-                description = desc_elem.get_text(strip=True)
-                if len(description) > 50:  # Only use if substantial content
-                    break
+        # Extract sections based on h2 headers (semantic chunking at scraping stage)
+        sections = extract_sections_by_headers(soup)
         
         # Extract credits - look for patterns like "7.5 credits" or "7,5 hp"
         credits = None
@@ -92,34 +245,28 @@ def scrape_course_page(course_url: str, course_code: str = None, course_type: st
             except:
                 pass
         
-        # Extract prerequisites - look for "Prerequisites" or "Prerequisit" sections
+        # Extract prerequisites from sections
         prerequisites = []
-        prereq_keywords = ['prerequisite', 'prerequisit', 'required course']
-        for keyword in prereq_keywords:
-            prereq_elem = soup.find(text=re.compile(keyword, re.IGNORECASE))
-            if prereq_elem:
-                parent = prereq_elem.parent
-                if parent:
-                    prereq_text = parent.get_text()
-                    # Look for course codes in the text
-                    course_codes = re.findall(r'\b([A-Z]{3}\d{3})\b', prereq_text)
-                    prerequisites.extend(course_codes)
+        for section in sections:
+            if section['section_name'].lower() in ['prerequisites', 'course specific prerequisites']:
+                # Look for course codes in the prerequisites section
+                course_codes = re.findall(r'\b([A-Z]{3}\d{3})\b', section['content'])
+                prerequisites.extend(course_codes)
         
         # Remove duplicates
         prerequisites = list(set(prerequisites))
         
-        # Build course dictionary
+        # Extract program information from sections
+        programs = extract_program_info_from_sections(sections)
+        
+        # Build course dictionary with sections
         course = {
             "course_code": course_code,
             "course_name": course_name or "UNKNOWN",
-            "description": description,
             "credits": credits,
             "prerequisites": prerequisites,
-            "learning_outcomes": [],  # TODO: Extract from page structure
-            "schedule": None,  # TODO: Extract from page
-            "instructor": None,  # TODO: Extract from page
-            "department": None,  # TODO: Extract from page
-            "level": None,  # TODO: Extract from page
+            "sections": sections,  # Pre-chunked sections from HTML
+            "programs": programs,  # Program information
             "course_type": course_type,  # compulsory/elective from programme page
             "url": course_url,
             "scraped_date": time.strftime("%Y-%m-%d")
