@@ -19,7 +19,7 @@ class QueryAnalyzer:
     COMPULSORY_KEYWORDS = ['compulsory', 'mandatory', 'required', 'must take', 'have to']
     
     # Section-specific keywords for query enhancement
-    PREREQUISITE_KEYWORDS = ['prerequisite', 'prerequisit', 'required course', 'required courses', 'what do i need']
+    PREREQUISITE_KEYWORDS = ['prerequisite', 'prerequisit', 'required course', 'required courses', 'what do i need', 'requirements', 'requirement', 'entry requirements', 'eligibility']
     LEARNING_OUTCOME_KEYWORDS = ['learning outcome', 'learning outcomes', 'what will i learn', 'what can i do']
     EXAM_KEYWORDS = ['examination', 'exam', 'exams', 'how is it examined', 'grading', 'assessment']
     CONTENT_KEYWORDS = ['content', 'what is covered', 'what topics', 'syllabus', 'curriculum']
@@ -326,7 +326,7 @@ class SmartRetriever:
                                 )
                                 results = results[:k]
                                 scores = scores[:k]
-                                has_good_info = any(score <= self.max_similarity_distance for score in scores) if scores else False
+                                has_good_info = self._calculate_has_good_info(results, scores, query)
                                 return results, scores, has_good_info
                             else:
                                 results_with_scores = self.vector_store.similarity_search_with_score(
@@ -363,7 +363,7 @@ class SmartRetriever:
                                 )
                                 results = results[:k]
                                 scores = scores[:k]
-                                has_good_info = any(score <= self.max_similarity_distance for score in scores) if scores else False
+                                has_good_info = self._calculate_has_good_info(results, scores, query)
                                 return results, scores, has_good_info
                             else:
                                 results_with_scores = self.vector_store.similarity_search_with_score(query, k=search_k * 2)
@@ -382,7 +382,7 @@ class SmartRetriever:
                         results_with_scores = self._filter_by_relevance(results_with_scores)
                         results = [doc for doc, _ in results_with_scores[:k]]
                         scores = [score for _, score in results_with_scores[:k]]
-                        has_good_info = any(score <= self.max_similarity_distance for score in scores) if scores else False
+                        has_good_info = self._calculate_has_good_info(results, scores, query)
                         return results, scores, has_good_info
                 else:
                     # Direct filter for single value
@@ -394,7 +394,7 @@ class SmartRetriever:
                     results_with_scores = self._filter_by_relevance(results_with_scores)
                     results = [doc for doc, _ in results_with_scores[:k]]
                     scores = [score for _, score in results_with_scores[:k]]
-                    has_good_info = any(score <= self.max_similarity_distance for score in scores) if scores else False
+                    has_good_info = self._calculate_has_good_info(results, scores, query)
                     return results, scores, has_good_info
             except Exception as e:
                 # Fallback to standard search if filter fails
@@ -430,8 +430,8 @@ class SmartRetriever:
                 results = [doc for doc, _ in results_with_scores[:k]]
                 scores = [score for _, score in results_with_scores[:k]]
             
-            # Check if we have at least one good result (score below threshold)
-            has_good_info = any(score <= self.max_similarity_distance for score in scores) if scores else False
+            # Check if we have good information using the helper method
+            has_good_info = self._calculate_has_good_info(results, scores, query)
             return results, scores, has_good_info
     
     def _boost_relevant_sections(
@@ -498,6 +498,41 @@ class SmartRetriever:
         
         # Return matching docs first, then non-matching (preserving semantic order within each group)
         return matching_docs + non_matching_docs
+    
+    def _calculate_has_good_info(
+        self,
+        results: List[Document],
+        scores: List[float],
+        query: str
+    ) -> bool:
+        """Calculate whether we have good information based on scores and query context.
+        
+        Args:
+            results: Retrieved documents
+            scores: Similarity scores for the documents
+            query: Original query string
+            
+        Returns:
+            True if we have good information, False otherwise
+        """
+        # First check: standard threshold check
+        has_good_info = any(score <= self.max_similarity_distance for score in scores) if scores else False
+        
+        # Second check: if we have documents and they match the course code in the query, be more lenient
+        # This handles cases where semantic similarity is slightly above threshold but we have relevant course-specific info
+        if not has_good_info and results:
+            analysis = self.analyzer.analyze_query(query)
+            course_codes = analysis.get('course_codes', [])
+            if course_codes:
+                # Check if any retrieved document matches the course code from query
+                retrieved_course_codes = {doc.metadata.get('course_code', '').upper() for doc in results}
+                query_course_codes = {code.upper() for code in course_codes}
+                if retrieved_course_codes & query_course_codes:  # If there's any overlap
+                    # If we have course-specific documents, consider it good info even if scores are slightly high
+                    # Use a more lenient threshold (1.0 instead of 0.8) for course-specific queries
+                    has_good_info = any(score <= 1.0 for score in scores) if scores else False
+        
+        return has_good_info
     
     def _filter_by_relevance(
         self,
