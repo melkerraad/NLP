@@ -196,7 +196,9 @@ def format_docs(docs) -> str:
             
             if section_key not in courses[course_code]['sections']:
                 courses[course_code]['sections'][section_key] = []
-            courses[course_code]['sections'][section_key].append(content)
+            # Only add if content is not already in the list (deduplicate)
+            if content not in courses[course_code]['sections'][section_key]:
+                courses[course_code]['sections'][section_key].append(content)
         elif chunk_type == 'metadata':
             # Store metadata separately
             courses[course_code]['metadata'] = content
@@ -222,8 +224,17 @@ def format_docs(docs) -> str:
                 # Capitalize section name
                 section_display = section_key.replace('_', ' ').title()
                 formatted_parts.append(f"#### {section_display}")
-                # Join multiple chunks for same section
-                section_content = '\n\n'.join(course_data['sections'][section_key])
+                # Join multiple chunks for same section (deduplicate first)
+                section_contents = course_data['sections'][section_key]
+                # Remove exact duplicates
+                unique_contents = []
+                seen = set()
+                for content in section_contents:
+                    content_normalized = content.strip()
+                    if content_normalized and content_normalized not in seen:
+                        seen.add(content_normalized)
+                        unique_contents.append(content)
+                section_content = '\n\n'.join(unique_contents) if unique_contents else section_contents[0]
                 formatted_parts.append(section_content)
                 formatted_parts.append("")
         
@@ -232,7 +243,15 @@ def format_docs(docs) -> str:
             if section_key not in section_order:
                 section_display = section_key.replace('_', ' ').title()
                 formatted_parts.append(f"#### {section_display}")
-                section_content = '\n\n'.join(section_contents)
+                # Remove exact duplicates
+                unique_contents = []
+                seen = set()
+                for content in section_contents:
+                    content_normalized = content.strip()
+                    if content_normalized and content_normalized not in seen:
+                        seen.add(content_normalized)
+                        unique_contents.append(content)
+                section_content = '\n\n'.join(unique_contents) if unique_contents else section_contents[0]
                 formatted_parts.append(section_content)
                 formatted_parts.append("")
     
