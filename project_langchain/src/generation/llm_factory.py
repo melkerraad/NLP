@@ -58,6 +58,7 @@ class LLMFactory:
         
         # Load model
         print(f"Loading model (device: {device})...")
+        use_device_map = False  # Track if we used device_map="auto"
         if device == "cuda":
             model = AutoModelForCausalLM.from_pretrained(
                 model_name,
@@ -65,6 +66,7 @@ class LLMFactory:
                 device_map="auto",
                 token=hf_token
             )
+            use_device_map = True  # Model loaded with device_map="auto"
         else:
             model = AutoModelForCausalLM.from_pretrained(
                 model_name,
@@ -87,17 +89,24 @@ class LLMFactory:
         
         # Create pipeline
         print("Creating pipeline...")
-        hf_pipeline = pipeline(
-            "text-generation",
-            model=model,
-            tokenizer=tokenizer,
-            device=0 if device == "cuda" else -1,
-            return_full_text=False,
-            max_new_tokens=max_new_tokens,
-            temperature=temperature if temperature > 0.1 else None,
-            top_p=top_p if temperature > 0.1 else None,
-            do_sample=temperature > 0.1
-        )
+        # Don't pass device argument if model was loaded with device_map="auto"
+        # (accelerate handles device placement automatically)
+        pipeline_kwargs = {
+            "task": "text-generation",
+            "model": model,
+            "tokenizer": tokenizer,
+            "return_full_text": False,
+            "max_new_tokens": max_new_tokens,
+            "temperature": temperature if temperature > 0.1 else None,
+            "top_p": top_p if temperature > 0.1 else None,
+            "do_sample": temperature > 0.1
+        }
+        
+        # Only add device parameter if we didn't use device_map="auto"
+        if not use_device_map:
+            pipeline_kwargs["device"] = 0 if device == "cuda" else -1
+        
+        hf_pipeline = pipeline(**pipeline_kwargs)
         
         # Wrap in LangChain pipeline
         llm = HuggingFacePipeline(pipeline=hf_pipeline)
