@@ -37,8 +37,9 @@ ui:
   enable_chat_history: false  # Set to true for conversation memory
 
 # Data paths
+# Use the cleaned JSON from the main project directory (shared via git)
 data:
-  courses_file: "data/processed/courses_clean.json"
-  raw_data_dir: "data/raw"
-  processed_data_dir: "data/processed"
+  courses_file: "../project/data/processed/courses_clean.json"
+  raw_data_dir: "../project/data/raw"
+  processed_data_dir: "../project/data/processed"
 
