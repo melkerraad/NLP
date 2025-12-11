@@ -2,7 +2,7 @@
 #SBATCH --job-name=rag_ui
 #SBATCH --partition=short
 #SBATCH --gres=gpu:L40s:1
-#SBATCH --time=02:00:00
+#SBATCH --time=00:30:00
 #SBATCH --mem=8G
 #SBATCH --output=ui_output_%j.log
 #SBATCH --error=ui_error_%j.log
