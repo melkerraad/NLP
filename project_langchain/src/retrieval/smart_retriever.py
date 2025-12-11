@@ -26,6 +26,106 @@ class QueryAnalyzer:
     ORGANISATION_KEYWORDS = ['organisation', 'organization', 'how is it organized', 'structure', 'format']
     
     @classmethod
+    def rewrite_query(cls, query: str) -> List[str]:
+        """Generate query variations to improve retrieval recall.
+        
+        Creates multiple query variations based on the original query to capture
+        different phrasings and improve retrieval coverage.
+        
+        Args:
+            query: Original user query
+            
+        Returns:
+            List of query variations (including original)
+        """
+        query_lower = query.lower()
+        variations = [query]  # Always include original
+        
+        # Extract course codes if present
+        course_codes = cls.extract_course_codes(query)
+        course_code_str = ' '.join(course_codes) if course_codes else ''
+        
+        # Generate variations based on query type and keywords
+        if any(keyword in query_lower for keyword in cls.PREREQUISITE_KEYWORDS):
+            # Prerequisite query variations
+            if course_codes:
+                variations.extend([
+                    f"prerequisites {course_code_str}",
+                    f"required courses {course_code_str}",
+                    f"what courses needed {course_code_str}",
+                    f"entry requirements {course_code_str}"
+                ])
+            else:
+                variations.extend([
+                    "prerequisites",
+                    "required courses",
+                    "entry requirements"
+                ])
+        
+        if any(keyword in query_lower for keyword in cls.EXAM_KEYWORDS):
+            # Exam query variations
+            if course_codes:
+                variations.extend([
+                    f"examination {course_code_str}",
+                    f"how is {course_code_str} examined",
+                    f"grading {course_code_str}",
+                    f"assessment {course_code_str}"
+                ])
+            else:
+                variations.extend([
+                    "examination",
+                    "how is course examined",
+                    "grading assessment"
+                ])
+        
+        if any(keyword in query_lower for keyword in cls.LEARNING_OUTCOME_KEYWORDS):
+            # Learning outcome variations
+            if course_codes:
+                variations.extend([
+                    f"learning outcomes {course_code_str}",
+                    f"what will I learn {course_code_str}",
+                    f"course objectives {course_code_str}"
+                ])
+            else:
+                variations.extend([
+                    "learning outcomes",
+                    "what will I learn",
+                    "course objectives"
+                ])
+        
+        if any(keyword in query_lower for keyword in cls.CONTENT_KEYWORDS):
+            # Content query variations
+            if course_codes:
+                variations.extend([
+                    f"content {course_code_str}",
+                    f"topics covered {course_code_str}",
+                    f"syllabus {course_code_str}"
+                ])
+            else:
+                variations.extend([
+                    "course content",
+                    "topics covered",
+                    "syllabus"
+                ])
+        
+        # General query expansion: add simpler versions
+        if course_codes and len(variations) == 1:
+            # If no specific variations, create general ones
+            variations.append(course_code_str)
+            variations.append(f"information about {course_code_str}")
+        
+        # Remove duplicates while preserving order
+        seen = set()
+        unique_variations = []
+        for v in variations:
+            v_lower = v.lower().strip()
+            if v_lower and v_lower not in seen:
+                seen.add(v_lower)
+                unique_variations.append(v)
+        
+        return unique_variations[:5]  # Limit to 5 variations
+    
+    @classmethod
     def extract_course_codes(cls, query: str) -> List[str]:
         """Extract course codes from query.
         
@@ -116,7 +216,9 @@ class SmartRetriever:
         vector_store: Chroma,
         base_k: int = 5,
         max_k: int = 30,
-        min_k: int = 1
+        min_k: int = 1,
+        max_similarity_distance: float = 0.8,
+        use_query_rewriting: bool = True
     ):
         """Initialize smart retriever.
         
@@ -125,11 +227,15 @@ class SmartRetriever:
             base_k: Default number of documents to retrieve
             max_k: Maximum number of documents to retrieve
             min_k: Minimum number of documents to retrieve
+            max_similarity_distance: Maximum similarity distance threshold (lower = more strict)
+            use_query_rewriting: Whether to use query rewriting/expansion
         """
         self.vector_store = vector_store
         self.base_k = base_k
         self.max_k = max_k
         self.min_k = min_k
+        self.max_similarity_distance = max_similarity_distance
+        self.use_query_rewriting = use_query_rewriting
         self.analyzer = QueryAnalyzer()
     
     def retrieve(
@@ -137,7 +243,7 @@ class SmartRetriever:
         query: str,
         k: Optional[int] = None,
         filter_dict: Optional[Dict] = None
-    ) -> List[Document]:
+    ) -> Tuple[List[Document], List[float], bool]:
         """Retrieve documents with optional filtering.
         
         Args:
@@ -146,8 +252,15 @@ class SmartRetriever:
             filter_dict: Optional metadata filter dictionary
             
         Returns:
-            List of retrieved documents
+            Tuple of (retrieved documents, similarity scores, has_good_info)
+            has_good_info: True if at least one result is below threshold
         """
+        # Use query rewriting if enabled
+        if self.use_query_rewriting:
+            query_variations = self.analyzer.rewrite_query(query)
+            # Use the first variation (original) for now, could merge results from all
+            query = query_variations[0]
+        
         # Analyze query if k not provided
         if k is None:
             analysis = self.analyzer.analyze_query(query)
@@ -200,21 +313,32 @@ class SmartRetriever:
                                 k=search_k,
                                 filter={'course_code': {'$in': course_codes}}
                             )
+                            # Filter by relevance threshold
+                            results_with_scores = self._filter_by_relevance(results_with_scores)
                             # Boost matching sections and re-rank
-                            results = self._boost_and_rerank_with_scores(
+                            results, scores = self._boost_and_rerank_with_scores(
                                 results_with_scores,
                                 is_prerequisite_query,
                                 is_learning_outcome_query,
                                 is_exam_query,
                                 is_content_query,
                                 is_organisation_query
-                            )[:k]
+                            )
+                            results = results[:k]
+                            scores = scores[:k]
+                            has_good_info = any(score <= self.max_similarity_distance for score in scores) if scores else False
+                            return results, scores, has_good_info
                         else:
-                            results = self.vector_store.similarity_search(
+                            results_with_scores = self.vector_store.similarity_search_with_score(
                                 query,
                                 k=search_k,
                                 filter={'course_code': {'$in': course_codes}}
                             )
+                            results_with_scores = self._filter_by_relevance(results_with_scores)
+                            results = [doc for doc, _ in results_with_scores[:k]]
+                            scores = [score for _, score in results_with_scores[:k]]
+                            has_good_info = any(score <= self.max_similarity_distance for score in scores) if scores else False
+                            return results, scores, has_good_info
                         except Exception as filter_error:
                             # Fallback: post-filter after getting more results
                             print(f"[INFO] Using post-filtering fallback: {filter_error}")
@@ -226,54 +350,89 @@ class SmartRetriever:
                                     (doc, score) for doc, score in results_with_scores
                                     if doc.metadata.get('course_code', '').upper() in [c.upper() for c in course_codes]
                                 ]
+                                # Filter by relevance threshold
+                                filtered_results_with_scores = self._filter_by_relevance(filtered_results_with_scores)
                                 # Boost and re-rank
-                                results = self._boost_and_rerank_with_scores(
+                                results, scores = self._boost_and_rerank_with_scores(
                                     filtered_results_with_scores,
                                     is_prerequisite_query,
                                     is_learning_outcome_query,
                                     is_exam_query,
                                     is_content_query,
                                     is_organisation_query
-                                )[:k]
+                                )
+                                results = results[:k]
+                                scores = scores[:k]
+                                has_good_info = any(score <= self.max_similarity_distance for score in scores) if scores else False
+                                return results, scores, has_good_info
                             else:
-                                results = self.vector_store.similarity_search(query, k=search_k * 2)
+                                results_with_scores = self.vector_store.similarity_search_with_score(query, k=search_k * 2)
                                 # Post-filter by course_code
-                                filtered_results = [
-                                    doc for doc in results 
+                                filtered_results_with_scores = [
+                                    (doc, score) for doc, score in results_with_scores
                                     if doc.metadata.get('course_code', '').upper() in [c.upper() for c in course_codes]
                                 ]
-                                results = filtered_results[:k]
+                                filtered_results_with_scores = self._filter_by_relevance(filtered_results_with_scores)
+                                results = [doc for doc, _ in filtered_results_with_scores[:k]]
+                                scores = [score for _, score in filtered_results_with_scores[:k]]
+                                has_good_info = any(score <= self.max_similarity_distance for score in scores) if scores else False
+                                return results, scores, has_good_info
                     else:
-                        results = self.vector_store.similarity_search(query, k=k)
+                        results_with_scores = self.vector_store.similarity_search_with_score(query, k=k)
+                        results_with_scores = self._filter_by_relevance(results_with_scores)
+                        results = [doc for doc, _ in results_with_scores[:k]]
+                        scores = [score for _, score in results_with_scores[:k]]
+                        has_good_info = any(score <= self.max_similarity_distance for score in scores) if scores else False
+                        return results, scores, has_good_info
                 else:
                     # Direct filter for single value
-                    results = self.vector_store.similarity_search(
+                    results_with_scores = self.vector_store.similarity_search_with_score(
                         query,
                         k=k,
                         filter=filter_dict
                     )
+                    results_with_scores = self._filter_by_relevance(results_with_scores)
+                    results = [doc for doc, _ in results_with_scores[:k]]
+                    scores = [score for _, score in results_with_scores[:k]]
+                    has_good_info = any(score <= self.max_similarity_distance for score in scores) if scores else False
+                    return results, scores, has_good_info
             except Exception as e:
                 # Fallback to standard search if filter fails
                 print(f"[WARNING] Filter failed, using standard search: {e}")
-                results = self.vector_store.similarity_search(query, k=k)
+                results_with_scores = self.vector_store.similarity_search_with_score(query, k=k)
+                results_with_scores = self._filter_by_relevance(results_with_scores)
+                results = [doc for doc, _ in results_with_scores[:k]]
+                scores = [score for _, score in results_with_scores[:k]]
+                has_good_info = any(score <= self.max_similarity_distance for score in scores) if scores else False
+                return results, scores, has_good_info
         else:
             # Standard semantic search with keyword boosting
             if use_score_based_boost:
                 search_k = k * 2
                 results_with_scores = self.vector_store.similarity_search_with_score(query, k=search_k)
+                # Filter by relevance threshold
+                results_with_scores = self._filter_by_relevance(results_with_scores)
                 # Boost and re-rank based on scores
-                results = self._boost_and_rerank_with_scores(
+                results, scores = self._boost_and_rerank_with_scores(
                     results_with_scores,
                     is_prerequisite_query,
                     is_learning_outcome_query,
                     is_exam_query,
                     is_content_query,
                     is_organisation_query
-                )[:k]
+                )
+                results = results[:k]
+                scores = scores[:k]
             else:
-                results = self.vector_store.similarity_search(query, k=k)
-        
-        return results
+                # For non-boosted queries, still filter by relevance if we have scores
+                results_with_scores = self.vector_store.similarity_search_with_score(query, k=k * 2)
+                results_with_scores = self._filter_by_relevance(results_with_scores)
+                results = [doc for doc, _ in results_with_scores[:k]]
+                scores = [score for _, score in results_with_scores[:k]]
+            
+            # Check if we have at least one good result (score below threshold)
+            has_good_info = any(score <= self.max_similarity_distance for score in scores) if scores else False
+            return results, scores, has_good_info
     
     def _boost_relevant_sections(
         self,
@@ -340,6 +499,27 @@ class SmartRetriever:
         # Return matching docs first, then non-matching (preserving semantic order within each group)
         return matching_docs + non_matching_docs
     
+    def _filter_by_relevance(
+        self,
+        results_with_scores: List[Tuple[Document, float]]
+    ) -> List[Tuple[Document, float]]:
+        """Filter results by similarity threshold.
+        
+        Removes documents with similarity scores above the threshold,
+        indicating they are not relevant enough.
+        
+        Args:
+            results_with_scores: List of (Document, score) tuples
+            
+        Returns:
+            Filtered list of (Document, score) tuples
+        """
+        filtered = [
+            (doc, score) for doc, score in results_with_scores
+            if score <= self.max_similarity_distance
+        ]
+        return filtered
+    
     def _boost_and_rerank_with_scores(
         self,
         results_with_scores: List[Tuple[Document, float]],
@@ -348,7 +528,7 @@ class SmartRetriever:
         is_exam_query: bool,
         is_content_query: bool,
         is_organisation_query: bool
-    ) -> List[Document]:
+    ) -> Tuple[List[Document], List[float]]:
         """Boost and re-rank documents using similarity scores + keyword matching.
         
         This provides stronger boosting than simple reordering by actually adjusting scores.
@@ -362,11 +542,13 @@ class SmartRetriever:
             is_organisation_query: Whether query mentions organisation
             
         Returns:
-            Re-ranked list of documents (without scores)
+            Tuple of (re-ranked documents, scores)
         """
         if not (is_prerequisite_query or is_learning_outcome_query or 
                 is_exam_query or is_content_query or is_organisation_query):
-            return [doc for doc, _ in results_with_scores]
+            docs = [doc for doc, _ in results_with_scores]
+            scores = [score for _, score in results_with_scores]
+            return docs, scores
         
         # Calculate boosted scores
         boosted_results = []
@@ -406,8 +588,10 @@ class SmartRetriever:
         # Sort by boosted score (lower = better)
         boosted_results.sort(key=lambda x: x[1])
         
-        # Return documents only (without scores)
-        return [doc for doc, _ in boosted_results]
+        # Return documents and scores separately
+        docs = [doc for doc, _ in boosted_results]
+        scores = [score for _, score in boosted_results]
+        return docs, scores
     
     def retrieve_with_scores(
         self,
@@ -504,6 +688,18 @@ class SmartRetrieverWrapper(BaseRetriever):
         Returns:
             List of relevant documents
         """
+        docs, _, _ = self.smart_retriever.retrieve(query)
+        return docs
+    
+    def retrieve_with_metadata(self, query: str) -> Tuple[List[Document], List[float], bool]:
+        """Retrieve documents with scores and information quality flag.
+        
+        Args:
+            query: Query string
+            
+        Returns:
+            Tuple of (documents, scores, has_good_info)
+        """
         return self.smart_retriever.retrieve(query)
     
     def invoke(self, query: str, *args, **kwargs) -> List[Document]:
@@ -516,4 +712,8 @@ class SmartRetrieverWrapper(BaseRetriever):
             List of documents
         """
         return self._get_relevant_documents(query)
+    
+    # Store metadata for access by RAG chain
+    _last_scores = []
+    _last_has_good_info = False
 

@@ -65,12 +65,16 @@ class RAGChatbotUI:
         base_k = retrieval_config.get("top_k", 3)
         max_k = retrieval_config.get("max_k", 30)
         min_k = retrieval_config.get("min_k", 1)
+        max_similarity_distance = retrieval_config.get("max_similarity_distance", 0.8)
+        use_query_rewriting = retrieval_config.get("use_query_rewriting", True)
         
         smart_retriever = SmartRetriever(
             vector_store=self.vector_store,
             base_k=base_k,
             max_k=max_k,
-            min_k=min_k
+            min_k=min_k,
+            max_similarity_distance=max_similarity_distance,
+            use_query_rewriting=use_query_rewriting
         )
         
         # Wrap for LangChain compatibility

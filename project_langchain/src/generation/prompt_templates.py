@@ -8,7 +8,9 @@ class PromptTemplateManager:
     """Manager for prompt templates used in RAG chains."""
     
     # Template definitions
-    RAG_TEMPLATE = """You are a helpful assistant that answers questions about university courses. Use the following course information to answer the question. If the information is not available in the context, say so.
+    RAG_TEMPLATE = """You are a helpful assistant that answers questions about university courses. Use the following course information to answer the question. 
+
+IMPORTANT: If the information is not available in the context, or if the context indicates that no relevant information was found, you must clearly state "I don't have sufficient information to answer this question" or "I don't know" rather than making up an answer.
 
 Course Information:
 {context}

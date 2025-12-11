@@ -75,17 +75,16 @@ class RAGChainBuilder:
         """
         return self.chain.invoke(query)
     
-    def invoke_with_sources(self, query: str) -> dict:
+    def invoke_with_sources(self, query: str, has_good_info: bool = True) -> dict:
         """Invoke the RAG chain and include source information.
         
         Args:
             query: User query string
+            has_good_info: Whether retrieved documents have good relevance scores
             
         Returns:
             Dictionary with 'answer', 'context', 'question', and 'sources' keys
         """
-        result = self.invoke(query)
-        
         # Get sources from retrieved documents
         retrieved_docs = self.retriever.invoke(query)
         sources = []
@@ -94,7 +93,39 @@ class RAGChainBuilder:
             if course_code:
                 sources.append(course_code)
         
-        result['sources'] = list(set(sources))  # Remove duplicates
+        # If we don't have good information, modify the context to indicate this
+        if not has_good_info or not retrieved_docs:
+            # Create a modified context that tells the LLM we don't have good information
+            context = "No relevant course information was found for this query. The retrieved documents are not sufficiently relevant to answer the question."
+        else:
+            # Format documents normally
+            context = self.format_docs_func(retrieved_docs)
+        
+        # Format the prompt with context and question
+        formatted_prompt = self.prompt.format(context=context, question=query)
+        
+        # Invoke LLM
+        try:
+            answer = self.llm.invoke(formatted_prompt)
+            # Convert to string if needed
+            if not isinstance(answer, str):
+                answer = str(answer)
+        except Exception as e:
+            print(f"[WARNING] LLM invocation failed: {e}")
+            answer = "I encountered an error while generating the answer."
+        
+        # If we don't have good info, ensure the answer reflects this
+        if not has_good_info or not retrieved_docs:
+            answer_lower = answer.lower() if isinstance(answer, str) else str(answer).lower()
+            if "don't" not in answer_lower and "not available" not in answer_lower and "no information" not in answer_lower and "i don't know" not in answer_lower:
+                answer = "I don't have sufficient information to answer this question based on the available course data."
+        
+        result = {
+            'answer': str(answer),
+            'context': context,
+            'question': query,
+            'sources': list(set(sources))  # Remove duplicates
+        }
         
         return result
     

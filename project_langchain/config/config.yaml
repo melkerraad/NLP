@@ -15,6 +15,8 @@ retrieval:
   max_k: 5  # Maximum documents (limit to 5 for better coverage)
   min_k: 1   # Minimum documents
   embedding_model: "all-MiniLM-L6-v2"  # SentenceTransformer model
+  max_similarity_distance: 0.8  # Maximum similarity distance threshold (lower = more strict, filters out irrelevant results)
+  use_query_rewriting: true  # Enable query rewriting/expansion for better recall
   # Dynamic K settings:
   # - Specific course queries (e.g., "Is DAT450 compulsory?"): k=1
   # - Comparison queries: k=5-10
