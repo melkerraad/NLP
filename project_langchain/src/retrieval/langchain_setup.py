@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 from typing import List, Dict, Optional
 from langchain_core.documents import Document
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 import torch
 
 import sys
@@ -34,95 +35,139 @@ def load_courses(data_path: Path) -> List[Dict]:
     return courses
 
 
-def parse_course_sections(description: str) -> Dict[str, str]:
-    """Parse course description into semantic sections.
+def extract_program_info(description: str) -> List[str]:
+    """Extract program information from course description.
+    
+    Looks for patterns like "In programmesMPDSC - Data Science and AI, Year 1(compulsory)"
+    or "MPDSC - Data Science and AI, Year 1(compulsory)"
     
     Args:
         description: Full course description text
         
     Returns:
-        Dictionary mapping section names to section content
+        List of program strings (e.g., ["MPDSC - Data Science and AI, Year 1 (compulsory)"])
     """
-    sections = {}
+    programs = []
     
-    # Define section headers to look for (order matters - more specific first)
-    # Use word boundaries to avoid partial matches
-    section_patterns = [
-        (r'\bCourse specific prerequisites\b', 'prerequisites'),
-        (r'\bExamination including compulsory elements\b', 'examination'),
-        (r'\bLearning outcomes\s*\([^)]*\)\b', 'learning_outcomes'),
-        (r'\bAim\b', 'aim'),
-        (r'\bContent\b', 'content'),
-        (r'\bOrganisation\b', 'organisation'),
-        (r'\bLiterature\b', 'literature'),
-    ]
+    # Pattern to match program codes and names
+    # Format: "MPDSC - Data Science and AI, Year 1(compulsory)" or similar
+    # Look for patterns like: CODE - Name, Year X(type)
+    pattern = r'([A-Z]{2,6})\s*-\s*([^,]+?),\s*Year\s*\d+\s*\(([^)]+)\)'
+    matches = re.finditer(pattern, description, re.IGNORECASE)
     
-    # Find all section boundaries
-    section_boundaries = []
-    for pattern, section_name in section_patterns:
-        matches = list(re.finditer(pattern, description, re.IGNORECASE))
-        for match in matches:
-            # Use end of match as start of content (after header)
-            section_boundaries.append((match.end(), section_name, match.group(0)))
+    for match in matches:
+        code = match.group(1)
+        name = match.group(2).strip()
+        course_type = match.group(3).strip()
+        program_str = f"{code} - {name}, Year {match.group(0).split('Year ')[1].split('(')[0].strip()} ({course_type})"
+        programs.append(program_str)
     
-    # Sort by position in text
-    section_boundaries.sort(key=lambda x: x[0])
+    # Also try simpler pattern: "In programmes" followed by text until "Examiner"
+    if not programs:
+        pattern2 = r'In programmes([^E]+?)(?:Examiner|$)'
+        matches2 = re.finditer(pattern2, description, re.IGNORECASE | re.DOTALL)
+        for match in matches2:
+            program_text = match.group(1).strip()
+            # Clean up the text
+            program_text = re.sub(r'\s+', ' ', program_text)  # Normalize whitespace
+            if program_text and len(program_text) > 10:  # Minimum length
+                programs.append(program_text)
     
-    # Remove duplicates (keep first occurrence if same section appears multiple times)
-    seen_sections = {}
-    unique_boundaries = []
-    for pos, section_name, header in section_boundaries:
-        if section_name not in seen_sections:
-            seen_sections[section_name] = True
-            unique_boundaries.append((pos, section_name, header))
-    section_boundaries = unique_boundaries
-    section_boundaries.sort(key=lambda x: x[0])
-    
-    # Extract sections
-    for i, (start_pos, section_name, header) in enumerate(section_boundaries):
-        # Find end position (start of next section or end of text)
-        if i + 1 < len(section_boundaries):
-            end_pos = section_boundaries[i + 1][0]
-        else:
-            end_pos = len(description)
-        
-        # Extract section content (from after header to next section)
-        section_content = description[start_pos:end_pos].strip()
-        
-        # Clean up: remove any trailing section headers that might have been included
-        for other_pattern, other_name in section_patterns:
-            if other_name != section_name:
-                # Remove trailing headers
-                section_content = re.sub(
-                    other_pattern + r'.*$', 
-                    '', 
-                    section_content, 
-                    flags=re.IGNORECASE | re.DOTALL
-                ).strip()
-        
-        if section_content and len(section_content) > 10:  # Minimum content length
-            sections[section_name] = section_content
-    
-    # If no sections found, return entire description as "general" section
-    if not sections:
-        sections['general'] = description
-    
-    return sections
+    return programs
 
 
-def courses_to_documents(courses: List[Dict]) -> List[Document]:
-    """Convert course dictionaries to LangChain Documents with semantic chunking.
+def create_metadata_chunk(course: Dict) -> Document:
+    """Create a metadata chunk with course information (everything except description).
     
-    Each course is split into semantic sections (prerequisites, aim, learning outcomes,
-    content, etc.), and each section becomes a separate document.
+    Args:
+        course: Course dictionary
+        
+    Returns:
+        Document with course metadata
+    """
+    course_code = course.get('course_code', '')
+    course_name = course.get('course_name', '')
+    course_type = course.get('course_type', '')
+    credits = course.get('credits')
+    prerequisites = course.get('prerequisites', [])
+    description = course.get('description', '')
+    
+    # Extract program information from description
+    programs = extract_program_info(description)
+    
+    # Build metadata text
+    metadata_parts = []
+    
+    # Course identification
+    if course_code or course_name:
+        metadata_parts.append(f"Course Code: {course_code}")
+        metadata_parts.append(f"Course Name: {course_name}")
+    
+    # Course type
+    if course_type:
+        metadata_parts.append(f"Course Type: {course_type}")
+    
+    # Credits
+    if credits:
+        metadata_parts.append(f"Credits: {credits}")
+    
+    # Prerequisites
+    if prerequisites:
+        prereq_str = ', '.join(prerequisites)
+        metadata_parts.append(f"Prerequisites: {prereq_str}")
+    
+    # Program information (which programs this course is part of)
+    if programs:
+        metadata_parts.append("\nProgram Information:")
+        for program in programs:
+            metadata_parts.append(f"  - {program}")
+    
+    # URL
+    url = course.get('url', '')
+    if url:
+        metadata_parts.append(f"\nCourse URL: {url}")
+    
+    metadata_text = "\n".join(metadata_parts)
+    
+    # Create metadata
+    metadata = {
+        'course_code': course_code,
+        'course_name': course_name,
+        'course_type': course_type,
+        'url': url,
+        'chunk_type': 'metadata'
+    }
+    
+    return Document(
+        page_content=metadata_text,
+        metadata=metadata
+    )
+
+
+def courses_to_documents(courses: List[Dict], chunk_size: int = 500, chunk_overlap: int = 100) -> List[Document]:
+    """Convert course dictionaries to LangChain Documents with overlap-based chunking.
+    
+    Each course creates:
+    1. One metadata chunk (course info, programs, prerequisites - everything except description)
+    2. Multiple description chunks (description split with overlap)
     
     Args:
         courses: List of course dictionaries
+        chunk_size: Size of each chunk in characters
+        chunk_overlap: Overlap between chunks in characters
         
     Returns:
-        List of LangChain Document objects (one per section per course)
+        List of LangChain Document objects
     """
     documents = []
+    
+    # Initialize text splitter for description chunking
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+        length_function=len,
+        separators=["\n\n", "\n", ". ", " ", ""]  # Try to split on paragraphs, sentences, words
+    )
     
     for course in courses:
         course_code = course.get('course_code', '')
@@ -138,69 +183,50 @@ def courses_to_documents(courses: List[Dict]) -> List[Document]:
             'url': course.get('url', '')
         }
         
-        # Parse description into semantic sections
+        # 1. Create metadata chunk (everything except description)
+        metadata_doc = create_metadata_chunk(course)
+        metadata_doc.metadata.update(base_metadata)
+        documents.append(metadata_doc)
+        
+        # 2. Create description chunks with overlap
         if description:
-            sections = parse_course_sections(description)
-        else:
-            sections = {}
-        
-        # Create a document for each section
-        for section_name, section_content in sections.items():
-            # Build document text with course context
-            doc_parts = []
-            
-            # Always include course code and name
-            if course_code or course_name:
-                doc_parts.append(f"Course: {course_code} - {course_name}")
-            
-            # Include course type
+            # Add course context to description
+            description_with_context = f"Course: {course_code} - {course_name}\n\n"
             if course_type:
-                doc_parts.append(f"This course is {course_type}.")
+                description_with_context += f"This course is {course_type}.\n\n"
+            description_with_context += f"Course Description:\n{description}"
             
-            # Add section header and content
-            section_header_map = {
-                'prerequisites': 'Course Specific Prerequisites',
-                'aim': 'Aim',
-                'learning_outcomes': 'Learning Outcomes',
-                'content': 'Content',
-                'organisation': 'Organisation',
-                'literature': 'Literature',
-                'examination': 'Examination including compulsory elements',
-                'general': 'Course Information'
-            }
-            section_header = section_header_map.get(section_name, section_name.title())
-            doc_parts.append(f"{section_header}:\n{section_content}")
+            # Split description into chunks
+            description_chunks = text_splitter.split_text(description_with_context)
             
-            # Combine into document text
-            document_text = "\n\n".join(doc_parts)
-            
-            # Create metadata with section information
-            metadata = base_metadata.copy()
-            metadata['section'] = section_name
-            
-            # Create LangChain Document
-            doc = Document(
-                page_content=document_text,
-                metadata=metadata
-            )
-            documents.append(doc)
-        
-        # If no description or sections, create a minimal document with just course info
-        if not sections:
-            doc_parts = []
-            if course_code or course_name:
-                doc_parts.append(f"Course: {course_code} - {course_name}")
-            if course_type:
-                doc_parts.append(f"This course is {course_type}.")
-            
-            if doc_parts:
+            # Create a document for each description chunk
+            for i, chunk_text in enumerate(description_chunks):
                 metadata = base_metadata.copy()
-                metadata['section'] = 'general'
+                metadata['chunk_type'] = 'description'
+                metadata['chunk_index'] = i
+                metadata['total_chunks'] = len(description_chunks)
+                
                 doc = Document(
-                    page_content="\n\n".join(doc_parts),
+                    page_content=chunk_text,
                     metadata=metadata
                 )
                 documents.append(doc)
+        else:
+            # If no description, create a minimal description chunk
+            minimal_text = f"Course: {course_code} - {course_name}"
+            if course_type:
+                minimal_text += f"\nThis course is {course_type}."
+            
+            metadata = base_metadata.copy()
+            metadata['chunk_type'] = 'description'
+            metadata['chunk_index'] = 0
+            metadata['total_chunks'] = 1
+            
+            doc = Document(
+                page_content=minimal_text,
+                metadata=metadata
+            )
+            documents.append(doc)
     
     return documents
 
@@ -230,11 +256,15 @@ def main():
     # Load courses
     courses = load_courses(courses_file)
     
-    # Convert to LangChain Documents (with semantic chunking)
-    print("\nConverting courses to LangChain Documents with semantic chunking...")
-    documents = courses_to_documents(courses)
+    # Convert to LangChain Documents (with overlap-based chunking)
+    print("\nConverting courses to LangChain Documents with overlap-based chunking...")
+    chunk_size = 500  # Characters per chunk
+    chunk_overlap = 100  # Overlap between chunks
+    print(f"   Chunk size: {chunk_size} characters, Overlap: {chunk_overlap} characters")
+    documents = courses_to_documents(courses, chunk_size=chunk_size, chunk_overlap=chunk_overlap)
     print(f"[OK] Created {len(documents)} document chunks from {len(courses)} courses")
     print(f"   Average: {len(documents)/len(courses):.1f} chunks per course")
+    print(f"   (Each course has 1 metadata chunk + multiple description chunks)")
     
     # Create vector store (always overwrite in setup mode)
     print("\nCreating vector store...")
