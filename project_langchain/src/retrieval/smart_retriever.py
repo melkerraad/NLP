@@ -67,14 +67,16 @@ class QueryAnalyzer:
             query_type = 'general'
         
         # Determine suggested K
+        # For specific course queries with chunked documents, we need multiple chunks
+        # (metadata chunk + multiple description chunks)
         if query_type == 'specific':
-            suggested_k = 1  # Only need the specific course
+            suggested_k = 10  # Get multiple chunks from the specific course (metadata + description chunks)
         elif query_type == 'comparison':
-            suggested_k = min(len(course_codes) * 2, 10) if course_codes else 5
+            suggested_k = min(len(course_codes) * 5, 15) if course_codes else 5  # Multiple chunks per course
         elif query_type == 'list' or is_compulsory_query:
             suggested_k = 20  # Need many courses for lists
         else:
-            suggested_k = 3  # Default
+            suggested_k = 5  # Default (increased for chunked documents)
         
         return {
             'course_codes': course_codes,
@@ -144,21 +146,40 @@ class SmartRetriever:
         # Perform retrieval
         if filter_dict:
             # Use metadata filtering - ChromaDB filter syntax: {'field': 'value'}
-            # For multiple values, we'll use post-filtering
             try:
-                # Try direct filter if single value
+                # Handle course_code filtering (for chunked documents)
                 if 'course_code' in filter_dict and isinstance(filter_dict['course_code'], dict):
-                    # Handle $in operator by post-filtering
+                    # Handle $in operator - get chunks from specific courses
                     course_codes = filter_dict['course_code'].get('$in', [])
                     if course_codes:
-                        # Get more results and filter
-                        results = self.vector_store.similarity_search(query, k=k * 3)
-                        # Post-filter by course_code
-                        filtered_results = [
-                            doc for doc in results 
-                            if doc.metadata.get('course_code', '').upper() in [c.upper() for c in course_codes]
-                        ]
-                        results = filtered_results[:k]
+                        # Use ChromaDB metadata filter to get chunks from specific courses
+                        # This ensures we get chunks from the right course(s)
+                        try:
+                            # Try using ChromaDB's where filter
+                            # Format: {'course_code': {'$in': ['DAT441', 'DAT695']}}
+                            results = self.vector_store.similarity_search(
+                                query,
+                                k=k,
+                                filter={'course_code': {'$in': course_codes}}
+                            )
+                        except Exception as filter_error:
+                            # Fallback: post-filter after getting more results
+                            print(f"[INFO] Using post-filtering fallback: {filter_error}")
+                            results = self.vector_store.similarity_search(query, k=k * 2)
+                            # Post-filter by course_code
+                            filtered_results = [
+                                doc for doc in results 
+                                if doc.metadata.get('course_code', '').upper() in [c.upper() for c in course_codes]
+                            ]
+                            results = filtered_results[:k]
+                        
+                        # Prioritize metadata chunks if available (they contain prerequisites, program info, etc.)
+                        metadata_chunks = [doc for doc in results if doc.metadata.get('chunk_type') == 'metadata']
+                        description_chunks = [doc for doc in results if doc.metadata.get('chunk_type') == 'description']
+                        
+                        # Reorder: metadata chunks first, then description chunks
+                        if metadata_chunks:
+                            results = metadata_chunks + description_chunks[:k - len(metadata_chunks)]
                     else:
                         results = self.vector_store.similarity_search(query, k=k)
                 else:
@@ -211,12 +232,29 @@ class SmartRetriever:
                 if 'course_code' in filter_dict and isinstance(filter_dict['course_code'], dict):
                     course_codes = filter_dict['course_code'].get('$in', [])
                     if course_codes:
-                        results = self.vector_store.similarity_search_with_score(query, k=k * 3)
-                        filtered_results = [
-                            (doc, score) for doc, score in results 
-                            if doc.metadata.get('course_code', '').upper() in [c.upper() for c in course_codes]
-                        ]
-                        results = filtered_results[:k]
+                        # Try using ChromaDB metadata filter
+                        try:
+                            results = self.vector_store.similarity_search_with_score(
+                                query,
+                                k=k,
+                                filter={'course_code': {'$in': course_codes}}
+                            )
+                        except Exception as filter_error:
+                            # Fallback: post-filter after getting more results
+                            print(f"[INFO] Using post-filtering fallback: {filter_error}")
+                            results = self.vector_store.similarity_search_with_score(query, k=k * 2)
+                            filtered_results = [
+                                (doc, score) for doc, score in results 
+                                if doc.metadata.get('course_code', '').upper() in [c.upper() for c in course_codes]
+                            ]
+                            results = filtered_results[:k]
+                        
+                        # Prioritize metadata chunks
+                        metadata_chunks = [(doc, score) for doc, score in results if doc.metadata.get('chunk_type') == 'metadata']
+                        description_chunks = [(doc, score) for doc, score in results if doc.metadata.get('chunk_type') == 'description']
+                        
+                        if metadata_chunks:
+                            results = metadata_chunks + description_chunks[:k - len(metadata_chunks)]
                     else:
                         results = self.vector_store.similarity_search_with_score(query, k=k)
                 else:
