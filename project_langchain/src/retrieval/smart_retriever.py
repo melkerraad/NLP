@@ -434,71 +434,6 @@ class SmartRetriever:
             has_good_info = self._calculate_has_good_info(results, scores, query)
             return results, scores, has_good_info
     
-    def _boost_relevant_sections(
-        self,
-        results: List[Document],
-        is_prerequisite_query: bool,
-        is_learning_outcome_query: bool,
-        is_exam_query: bool,
-        is_content_query: bool,
-        is_organisation_query: bool
-    ) -> List[Document]:
-        """Boost documents with matching section names based on query keywords.
-        
-        This implements hybrid search by combining semantic similarity with keyword matching.
-        
-        Args:
-            results: List of retrieved documents
-            is_prerequisite_query: Whether query mentions prerequisites
-            is_learning_outcome_query: Whether query mentions learning outcomes
-            is_exam_query: Whether query mentions exams
-            is_content_query: Whether query mentions content
-            is_organisation_query: Whether query mentions organisation
-            
-        Returns:
-            Reordered list with matching sections boosted to the top
-        """
-        if not (is_prerequisite_query or is_learning_outcome_query or 
-                is_exam_query or is_content_query or is_organisation_query):
-            return results
-        
-        # Separate documents into matching and non-matching
-        matching_docs = []
-        non_matching_docs = []
-        
-        for doc in results:
-            section_name = doc.metadata.get('section_name', '').lower()
-            section_name_original = doc.metadata.get('section_name_original', '').lower()
-            chunk_type = doc.metadata.get('chunk_type', '')
-            
-            is_match = False
-            
-            # Check if section matches query keywords (can match multiple keywords)
-            if is_prerequisite_query:
-                if 'prerequisite' in section_name or 'prerequisite' in section_name_original:
-                    is_match = True
-            if is_learning_outcome_query:
-                if 'learning outcome' in section_name or 'learning outcome' in section_name_original:
-                    is_match = True
-            if is_exam_query:
-                if 'examination' in section_name or 'exam' in section_name or 'examination' in section_name_original:
-                    is_match = True
-            if is_content_query:
-                if 'content' in section_name or 'content' in section_name_original:
-                    is_match = True
-            if is_organisation_query:
-                if 'organisation' in section_name or 'organization' in section_name or \
-                   'organisation' in section_name_original or 'organization' in section_name_original:
-                    is_match = True
-            
-            if is_match:
-                matching_docs.append(doc)
-            else:
-                non_matching_docs.append(doc)
-        
-        # Return matching docs first, then non-matching (preserving semantic order within each group)
-        return matching_docs + non_matching_docs
-    
     def _calculate_has_good_info(
         self,
         results: List[Document],
@@ -628,79 +563,6 @@ class SmartRetriever:
         scores = [score for _, score in boosted_results]
         return docs, scores
     
-    def retrieve_with_scores(
-        self,
-        query: str,
-        k: Optional[int] = None,
-        filter_dict: Optional[Dict] = None
-    ) -> List[Tuple[Document, float]]:
-        """Retrieve documents with similarity scores.
-        
-        Args:
-            query: Query string
-            k: Number of documents to retrieve
-            filter_dict: Optional metadata filter dictionary
-            
-        Returns:
-            List of tuples (Document, score)
-        """
-        if k is None:
-            analysis = self.analyzer.analyze_query(query)
-            k = analysis['suggested_k']
-            k = max(self.min_k, min(k, self.max_k))
-        
-        if filter_dict is None:
-            analysis = self.analyzer.analyze_query(query)
-            course_codes = analysis['course_codes']
-            if course_codes and analysis['query_type'] == 'specific':
-                filter_dict = {'course_code': {'$in': course_codes}}
-        
-        if filter_dict:
-            try:
-                # Handle filter similar to retrieve method
-                if 'course_code' in filter_dict and isinstance(filter_dict['course_code'], dict):
-                    course_codes = filter_dict['course_code'].get('$in', [])
-                    if course_codes:
-                        # Try using ChromaDB metadata filter
-                        try:
-                            results = self.vector_store.similarity_search_with_score(
-                                query,
-                                k=k,
-                                filter={'course_code': {'$in': course_codes}}
-                            )
-                        except Exception as filter_error:
-                            # Fallback: post-filter after getting more results
-                            print(f"[INFO] Using post-filtering fallback: {filter_error}")
-                            results = self.vector_store.similarity_search_with_score(query, k=k * 2)
-                            filtered_results = [
-                                (doc, score) for doc, score in results 
-                                if doc.metadata.get('course_code', '').upper() in [c.upper() for c in course_codes]
-                            ]
-                            results = filtered_results[:k]
-                        
-                        # Prioritize metadata chunks
-                        metadata_chunks = [(doc, score) for doc, score in results if doc.metadata.get('chunk_type') == 'metadata']
-                        description_chunks = [(doc, score) for doc, score in results if doc.metadata.get('chunk_type') == 'description']
-                        
-                        if metadata_chunks:
-                            results = metadata_chunks + description_chunks[:k - len(metadata_chunks)]
-                    else:
-                        results = self.vector_store.similarity_search_with_score(query, k=k)
-                else:
-                    results = self.vector_store.similarity_search_with_score(
-                        query,
-                        k=k,
-                        filter=filter_dict
-                    )
-            except Exception as e:
-                print(f"[WARNING] Filter failed, using standard search: {e}")
-                results = self.vector_store.similarity_search_with_score(query, k=k)
-        else:
-            results = self.vector_store.similarity_search_with_score(query, k=k)
-        
-        return results
-
-
 class SmartRetrieverWrapper(BaseRetriever):
     """LangChain-compatible wrapper for SmartRetriever."""
     
@@ -747,8 +609,4 @@ class SmartRetrieverWrapper(BaseRetriever):
             List of documents
         """
         return self._get_relevant_documents(query)
-    
-    # Store metadata for access by RAG chain
-    _last_scores = []
-    _last_has_good_info = False
 
