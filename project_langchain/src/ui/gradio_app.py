@@ -2,6 +2,7 @@
 
 import sys
 import gradio as gr
+import torch
 from pathlib import Path
 from typing import Optional
 
@@ -31,6 +32,7 @@ class RAGChatbotUI:
         self._initialize_components()
         
         print("[OK] UI components initialized")
+        self.tracker = TimingTracker()
     
     def _initialize_components(self):
         """Initialize RAG components (vector store, LLM, chain)."""
@@ -41,11 +43,20 @@ class RAGChatbotUI:
         
         persist_dir = str(project_root / vector_config.get("persist_directory", "data/chroma_db"))
         
+        # Auto-detect device for embeddings
+        embedding_device = "cuda" if torch.cuda.is_available() else "cpu"
+        
         print("Loading vector store...")
+        if torch.cuda.is_available():
+            print(f"[INFO] Using GPU: {torch.cuda.get_device_name(0)}")
+        else:
+            print("[INFO] Using CPU for embeddings")
+        
         self.vector_store = VectorStoreFactory.load_existing(
             collection_name=vector_config.get("collection_name", "chalmers_courses"),
             persist_directory=persist_dir,
-            embedding_model=retrieval_config.get("embedding_model", "all-MiniLM-L6-v2")
+            embedding_model=retrieval_config.get("embedding_model", "all-MiniLM-L6-v2"),
+            device=embedding_device
         )
         
         # Create retriever
@@ -79,23 +90,44 @@ class RAGChatbotUI:
             return "Please enter a question.", ""
         
         try:
-            # Get result with sources
-            result = self.rag_chain.invoke_with_sources(query)
+            # Time retrieval
+            with self.tracker.time_operation("retrieval"):
+                retrieved_docs = self.retriever.invoke(query)
+            
+            # Time generation
+            with self.tracker.time_operation("generation"):
+                result = self.rag_chain.invoke_with_sources(query)
             
             answer = result.get('answer', 'No answer generated.')
             sources = result.get('sources', [])
             
-            # Format sources
+            # Get timing information
+            retrieval_time = self.tracker.get_timing("retrieval")
+            generation_time = self.tracker.get_timing("generation")
+            
+            # Format sources with timing info
+            timing_info = []
+            if retrieval_time:
+                timing_info.append(f"Retrieval: {retrieval_time*1000:.0f}ms")
+            if generation_time:
+                timing_info.append(f"Generation: {generation_time*1000:.0f}ms")
+            
             if sources:
                 sources_str = f"Sources: {', '.join(sources)}"
+                if timing_info:
+                    sources_str += f" | {' | '.join(timing_info)}"
             else:
                 sources_str = "No sources found."
+                if timing_info:
+                    sources_str += f" | {' | '.join(timing_info)}"
             
             return answer, sources_str
             
         except Exception as e:
             error_msg = f"Error processing query: {str(e)}"
             print(error_msg)
+            import traceback
+            traceback.print_exc()
             return error_msg, ""
     
     def create_interface(self) -> gr.Blocks:

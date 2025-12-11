@@ -3,6 +3,7 @@
 from pathlib import Path
 import sys
 import time
+import torch
 
 # Add project root to path
 project_root = Path(__file__).parent
@@ -12,17 +13,28 @@ from src.utils.config_loader import load_config
 from src.retrieval.vector_store import VectorStoreFactory
 from src.generation.llm_factory import create_llm_from_config
 from src.generation.rag_chain import create_rag_chain
+from src.utils.timing import TimingTracker
 
 
 def main():
     """Run RAG pipeline tests."""
+    tracker = TimingTracker()
+    
     print("=" * 70)
     print("LangChain RAG Pipeline Test")
     print("=" * 70)
     
+    # Check GPU availability
+    print("\n[INFO] Device Information:")
+    print(f"  CUDA available: {torch.cuda.is_available()}")
+    if torch.cuda.is_available():
+        print(f"  CUDA device: {torch.cuda.get_device_name(0)}")
+        print(f"  CUDA memory: {torch.cuda.get_device_properties(0).total_memory / 1e9:.2f} GB")
+    
     # Load configuration
     print("\n[1/4] Loading configuration...")
-    config = load_config()
+    with tracker.time_operation("config_loading"):
+        config = load_config()
     print("[OK] Configuration loaded")
     
     # Load vector store
@@ -33,12 +45,17 @@ def main():
     
     persist_dir = str(project_root / vector_config.get("persist_directory", "data/chroma_db"))
     
+    # Auto-detect device for embeddings
+    embedding_device = "cuda" if torch.cuda.is_available() else "cpu"
+    
     try:
-        vector_store = VectorStoreFactory.load_existing(
-            collection_name=vector_config.get("collection_name", "chalmers_courses"),
-            persist_directory=persist_dir,
-            embedding_model=retrieval_config.get("embedding_model", "all-MiniLM-L6-v2")
-        )
+        with tracker.time_operation("vector_store_loading"):
+            vector_store = VectorStoreFactory.load_existing(
+                collection_name=vector_config.get("collection_name", "chalmers_courses"),
+                persist_directory=persist_dir,
+                embedding_model=retrieval_config.get("embedding_model", "all-MiniLM-L6-v2"),
+                device=embedding_device
+            )
         print(f"[OK] Vector store loaded ({vector_store._collection.count()} documents)")
     except FileNotFoundError as e:
         print(f"[ERROR] {e}")
@@ -52,7 +69,8 @@ def main():
     # Create LLM
     print("\n[3/4] Loading LLM...")
     try:
-        llm = create_llm_from_config(config.config)
+        with tracker.time_operation("llm_loading"):
+            llm = create_llm_from_config(config.config)
         print("[OK] LLM loaded")
     except Exception as e:
         print(f"[ERROR] Failed to load LLM: {e}")
@@ -63,11 +81,12 @@ def main():
     
     # Create RAG chain
     print("\n[4/4] Building RAG chain...")
-    rag_chain = create_rag_chain(
-        retriever=retriever,
-        llm=llm,
-        template_name="rag"
-    )
+    with tracker.time_operation("rag_chain_building"):
+        rag_chain = create_rag_chain(
+            retriever=retriever,
+            llm=llm,
+            template_name="rag"
+        )
     print("[OK] RAG chain ready")
     
     # Test queries
@@ -88,29 +107,43 @@ def main():
         print(f"Query {i}/{len(test_queries)}: {query}")
         print("-" * 70)
         
+        query_start_time = time.time()
+        
         # Retrieve documents
-        print("\nRetrieved documents:")
-        retrieved_docs = retriever.invoke(query)
+        print("\n[Step 1] Retrieving documents...")
+        with tracker.time_operation("retrieval"):
+            retrieved_docs = retriever.invoke(query)
+        
+        print(f"Retrieved {len(retrieved_docs)} documents:")
         for j, doc in enumerate(retrieved_docs, 1):
             course_code = doc.metadata.get('course_code', 'Unknown')
             course_name = doc.metadata.get('course_name', '')
             print(f"  {j}. {course_code}: {course_name}")
         
         # Generate answer
-        print("\nGenerating answer...")
-        start_time = time.time()
-        
+        print("\n[Step 2] Generating answer...")
         try:
-            result = rag_chain.invoke_with_sources(query)
-            generation_time = time.time() - start_time
+            with tracker.time_operation("generation"):
+                result = rag_chain.invoke_with_sources(query)
+            
+            total_query_time = time.time() - query_start_time
             
             print("\n" + "-" * 70)
             print("ANSWER:")
             print("-" * 70)
             print(result['answer'])
             print("\n" + "-" * 70)
-            print(f"Sources: {', '.join(result['sources'])}")
-            print(f"Generation time: {generation_time:.2f}s")
+            print("PERFORMANCE:")
+            print("-" * 70)
+            retrieval_time = tracker.get_timing("retrieval")
+            generation_time = tracker.get_timing("generation")
+            
+            if retrieval_time:
+                print(f"  Retrieval time: {retrieval_time*1000:.2f} ms")
+            if generation_time:
+                print(f"  Generation time: {generation_time*1000:.2f} ms")
+            print(f"  Total query time: {total_query_time*1000:.2f} ms")
+            print(f"  Sources: {', '.join(result['sources'])}")
             
         except Exception as e:
             print(f"[ERROR] Error generating answer: {e}")
@@ -121,6 +154,9 @@ def main():
     print("\n" + "=" * 70)
     print("[OK] RAG pipeline test completed!")
     print("=" * 70)
+    
+    # Print timing summary
+    tracker.print_summary("Overall Performance Summary")
 
 
 if __name__ == "__main__":

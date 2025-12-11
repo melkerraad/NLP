@@ -1,6 +1,11 @@
 # RAG Pipeline - Chalmers Course Chatbot
 
-A simple Retrieval-Augmented Generation (RAG) system that answers questions about Chalmers courses using Llama 3.2 1B (~2GB model).
+A Retrieval-Augmented Generation (RAG) system that answers questions about Chalmers courses using Llama 3.2 1B (~2GB model).
+
+## 📖 Documentation
+
+- **[RAG_WORKFLOW.md](RAG_WORKFLOW.md)** - Complete workflow documentation (what happens first, what runs every time, file purposes)
+- **[MINERVA_SETUP.md](MINERVA_SETUP.md)** - Setup instructions for Minerva HPC cluster
 
 ## Quick Start
 
@@ -9,52 +14,64 @@ A simple Retrieval-Augmented Generation (RAG) system that answers questions abou
 - Python 3.9+
 - Hugging Face token with access to Llama 3.2
   - Get token: https://huggingface.co/settings/tokens
-  - Request access: https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct (1B model, ~2GB)
+  - Request access: https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct
 
 ### Installation
 
 ```bash
+# Create virtual environment
+python3 -m venv venv_minerva
+source venv_minerva/bin/activate  # On Windows: venv_minerva\Scripts\activate
+
 # Install dependencies
 pip install -r requirements.txt
 
-# Create .env file with your Hugging Face token
-# Copy .env.example to .env and add your token:
-cp .env.example .env  # Linux/Mac
-copy .env.example .env  # Windows
-
-# Then edit .env and replace 'your_token_here' with your actual token
+# Set up Hugging Face token
+echo "HF_TOKEN=your_token_here" > .env
 ```
 
-Alternatively, you can set the environment variable directly:
+### Running RAG Queries
+
+**On Minerva (with GPU):**
 ```bash
-export HF_TOKEN="your_token_here"  # Linux/Mac
-$env:HF_TOKEN="your_token_here"    # Windows PowerShell
+sbatch run_minerva_rag.sh
+tail -f rag_output_<job_id>.log
 ```
 
-### Run Proof of Concept
-
+**Locally:**
 ```bash
 python test_rag.py
 ```
-
-This will:
-1. Load the vector database (already created from scraped courses)
-2. Retrieve relevant courses for a test query
-3. Generate a response using Llama 3.2 1B (~2GB download on first run)
 
 ## Project Structure
 
 ```
 project/
 ├── data/
-│   └── chroma_db/          # Vector database (already created)
+│   ├── raw/                # Raw scraped course data
+│   ├── processed/          # Cleaned course data
+│   └── chroma_db/          # Vector database (persistent)
 ├── src/
-│   ├── retrieval/          # CourseRetriever class
-│   └── generation/         # LlamaRAGGenerator class
-├── test_rag.py             # Proof of concept test
-└── requirements.txt        # Dependencies
+│   ├── data_collection/    # Web scraping scripts
+│   ├── preprocessing/      # Data cleaning
+│   ├── retrieval/          # Vector database & retrieval
+│   └── generation/         # Llama model generation
+├── test_rag.py             # Main RAG query script
+├── run_minerva_rag.sh      # SLURM batch script for queries
+├── run_setup_retrieval.sh  # SLURM batch script for DB setup
+└── RAG_WORKFLOW.md         # Complete workflow documentation
 ```
 
-## Usage
+## Workflow Overview
 
-The `test_rag.py` script demonstrates the complete RAG pipeline. Modify the query in the script to test different questions about Chalmers courses.
+1. **One-Time Setup:**
+   - Scrape course data (`chalmers_scraper.py`)
+   - Clean data (`clean_courses.py`)
+   - Create vector database (`setup_retrieval.py`)
+
+2. **Every Query:**
+   - Load vector database
+   - Retrieve relevant courses
+   - Generate answer with Llama model
+
+See [RAG_WORKFLOW.md](RAG_WORKFLOW.md) for detailed documentation.

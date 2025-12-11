@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from typing import List, Dict
 from langchain_core.documents import Document
+import torch
 
 import sys
 from pathlib import Path
@@ -116,11 +117,19 @@ def main():
     print("\nCreating vector store...")
     persist_dir = str(project_root / vector_config.get("persist_directory", "data/chroma_db"))
     
+    # Auto-detect device for embeddings
+    embedding_device = "cuda" if torch.cuda.is_available() else "cpu"
+    if torch.cuda.is_available():
+        print(f"[INFO] Using GPU: {torch.cuda.get_device_name(0)}")
+    else:
+        print("[INFO] Using CPU for embeddings")
+    
     vector_store = VectorStoreFactory.create_vector_store(
         collection_name=vector_config.get("collection_name", "chalmers_courses"),
         persist_directory=persist_dir,
         embedding_model=retrieval_config.get("embedding_model", "all-MiniLM-L6-v2"),
-        documents=documents
+        documents=documents,
+        device=embedding_device
     )
     
     # Verify
