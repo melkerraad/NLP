@@ -305,8 +305,8 @@ class SmartRetriever:
                             # Retrieve more documents for hybrid search (semantic + keyword matching)
                             # Get 2x k for semantic search, then boost/reorder by keywords
                             search_k = k * 2 if use_score_based_boost else k
-                        
-                        if use_score_based_boost:
+                            
+                            if use_score_based_boost:
                             # Use similarity_search_with_score to get scores for re-ranking
                             results_with_scores = self.vector_store.similarity_search_with_score(
                                 query,
