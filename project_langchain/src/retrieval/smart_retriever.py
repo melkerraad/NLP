@@ -173,6 +173,10 @@ class SmartRetriever:
         is_content_query = analysis.get('is_content_query', False)
         is_organisation_query = analysis.get('is_organisation_query', False)
         
+        # Use similarity search with scores for proper re-ranking
+        use_score_based_boost = (is_prerequisite_query or is_learning_outcome_query or 
+                                 is_exam_query or is_content_query or is_organisation_query)
+        
         # Perform retrieval with hybrid search (semantic + keyword boosting)
         if filter_dict:
             # Use metadata filtering - ChromaDB filter syntax: {'field': 'value'}
@@ -187,9 +191,25 @@ class SmartRetriever:
                         try:
                             # Retrieve more documents for hybrid search (semantic + keyword matching)
                             # Get 2x k for semantic search, then boost/reorder by keywords
-                            search_k = k * 2 if (is_prerequisite_query or is_learning_outcome_query or 
-                                                 is_exam_query or is_content_query or is_organisation_query) else k
-                            
+                            search_k = k * 2 if use_score_based_boost else k
+                        
+                        if use_score_based_boost:
+                            # Use similarity_search_with_score to get scores for re-ranking
+                            results_with_scores = self.vector_store.similarity_search_with_score(
+                                query,
+                                k=search_k,
+                                filter={'course_code': {'$in': course_codes}}
+                            )
+                            # Boost matching sections and re-rank
+                            results = self._boost_and_rerank_with_scores(
+                                results_with_scores,
+                                is_prerequisite_query,
+                                is_learning_outcome_query,
+                                is_exam_query,
+                                is_content_query,
+                                is_organisation_query
+                            )[:k]
+                        else:
                             results = self.vector_store.similarity_search(
                                 query,
                                 k=search_k,
@@ -198,28 +218,31 @@ class SmartRetriever:
                         except Exception as filter_error:
                             # Fallback: post-filter after getting more results
                             print(f"[INFO] Using post-filtering fallback: {filter_error}")
-                            search_k = k * 2 if (is_prerequisite_query or is_learning_outcome_query or 
-                                                 is_exam_query or is_content_query or is_organisation_query) else k
-                            results = self.vector_store.similarity_search(query, k=search_k * 2)
-                            # Post-filter by course_code
-                            filtered_results = [
-                                doc for doc in results 
-                                if doc.metadata.get('course_code', '').upper() in [c.upper() for c in course_codes]
-                            ]
-                            results = filtered_results[:search_k]
-                        
-                        # Hybrid search: Boost sections that match query keywords
-                        results = self._boost_relevant_sections(
-                            results, 
-                            is_prerequisite_query, 
-                            is_learning_outcome_query,
-                            is_exam_query,
-                            is_content_query,
-                            is_organisation_query
-                        )
-                        
-                        # Take top k after boosting
-                        results = results[:k]
+                            search_k = k * 2 if use_score_based_boost else k
+                            if use_score_based_boost:
+                                results_with_scores = self.vector_store.similarity_search_with_score(query, k=search_k * 2)
+                                # Post-filter by course_code
+                                filtered_results_with_scores = [
+                                    (doc, score) for doc, score in results_with_scores
+                                    if doc.metadata.get('course_code', '').upper() in [c.upper() for c in course_codes]
+                                ]
+                                # Boost and re-rank
+                                results = self._boost_and_rerank_with_scores(
+                                    filtered_results_with_scores,
+                                    is_prerequisite_query,
+                                    is_learning_outcome_query,
+                                    is_exam_query,
+                                    is_content_query,
+                                    is_organisation_query
+                                )[:k]
+                            else:
+                                results = self.vector_store.similarity_search(query, k=search_k * 2)
+                                # Post-filter by course_code
+                                filtered_results = [
+                                    doc for doc in results 
+                                    if doc.metadata.get('course_code', '').upper() in [c.upper() for c in course_codes]
+                                ]
+                                results = filtered_results[:k]
                     else:
                         results = self.vector_store.similarity_search(query, k=k)
                 else:
@@ -235,22 +258,20 @@ class SmartRetriever:
                 results = self.vector_store.similarity_search(query, k=k)
         else:
             # Standard semantic search with keyword boosting
-            search_k = k * 2 if (is_prerequisite_query or is_learning_outcome_query or 
-                                 is_exam_query or is_content_query or is_organisation_query) else k
-            results = self.vector_store.similarity_search(query, k=search_k)
-            
-            # Boost relevant sections
-            results = self._boost_relevant_sections(
-                results,
-                is_prerequisite_query,
-                is_learning_outcome_query,
-                is_exam_query,
-                is_content_query,
-                is_organisation_query
-            )
-            
-            # Take top k after boosting
-            results = results[:k]
+            if use_score_based_boost:
+                search_k = k * 2
+                results_with_scores = self.vector_store.similarity_search_with_score(query, k=search_k)
+                # Boost and re-rank based on scores
+                results = self._boost_and_rerank_with_scores(
+                    results_with_scores,
+                    is_prerequisite_query,
+                    is_learning_outcome_query,
+                    is_exam_query,
+                    is_content_query,
+                    is_organisation_query
+                )[:k]
+            else:
+                results = self.vector_store.similarity_search(query, k=k)
         
         return results
     
@@ -318,6 +339,75 @@ class SmartRetriever:
         
         # Return matching docs first, then non-matching (preserving semantic order within each group)
         return matching_docs + non_matching_docs
+    
+    def _boost_and_rerank_with_scores(
+        self,
+        results_with_scores: List[Tuple[Document, float]],
+        is_prerequisite_query: bool,
+        is_learning_outcome_query: bool,
+        is_exam_query: bool,
+        is_content_query: bool,
+        is_organisation_query: bool
+    ) -> List[Document]:
+        """Boost and re-rank documents using similarity scores + keyword matching.
+        
+        This provides stronger boosting than simple reordering by actually adjusting scores.
+        
+        Args:
+            results_with_scores: List of (Document, score) tuples
+            is_prerequisite_query: Whether query mentions prerequisites
+            is_learning_outcome_query: Whether query mentions learning outcomes
+            is_exam_query: Whether query mentions exams
+            is_content_query: Whether query mentions content
+            is_organisation_query: Whether query mentions organisation
+            
+        Returns:
+            Re-ranked list of documents (without scores)
+        """
+        if not (is_prerequisite_query or is_learning_outcome_query or 
+                is_exam_query or is_content_query or is_organisation_query):
+            return [doc for doc, _ in results_with_scores]
+        
+        # Calculate boosted scores
+        boosted_results = []
+        for doc, score in results_with_scores:
+            section_name = doc.metadata.get('section_name', '').lower()
+            section_name_original = doc.metadata.get('section_name_original', '').lower()
+            
+            # Check if section matches query keywords
+            is_match = False
+            if is_prerequisite_query:
+                if 'prerequisite' in section_name or 'prerequisite' in section_name_original:
+                    is_match = True
+            if is_learning_outcome_query:
+                if 'learning outcome' in section_name or 'learning outcome' in section_name_original:
+                    is_match = True
+            if is_exam_query:
+                if 'examination' in section_name or 'exam' in section_name or 'examination' in section_name_original:
+                    is_match = True
+            if is_content_query:
+                if 'content' in section_name or 'content' in section_name_original:
+                    is_match = True
+            if is_organisation_query:
+                if 'organisation' in section_name or 'organization' in section_name or \
+                   'organisation' in section_name_original or 'organization' in section_name_original:
+                    is_match = True
+            
+            # Boost matching sections: add a significant boost to their scores
+            # Lower scores = more similar, so we subtract to boost (make score lower = better rank)
+            if is_match:
+                # Strong boost: reduce score by 0.3 (makes it rank much higher)
+                boosted_score = score - 0.3
+            else:
+                boosted_score = score
+            
+            boosted_results.append((doc, boosted_score))
+        
+        # Sort by boosted score (lower = better)
+        boosted_results.sort(key=lambda x: x[1])
+        
+        # Return documents only (without scores)
+        return [doc for doc, _ in boosted_results]
     
     def retrieve_with_scores(
         self,
