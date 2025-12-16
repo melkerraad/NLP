@@ -1,0 +1,224 @@
+Q1: Who is the Examiner for the course DAT695?
+A1:  Ashkan PanahiDirector of Graduate Studies,Data Science and AI, Computer Science and Engineering.
+Correct
+
+Q2: What are the possible grades for the course DAT695?
+A2:  Pass and Fail.
+Correct
+
+Q3: What are the course specific prerequisites for the course TMA947?
+A3:  The course specific prerequisites for the course TMA947 are: A+ and Open for exchange students.
+Incorrect
+Wrong Context
+
+Q4: What content will the course TMA947 cover?
+A4:  The course will cover nonlinear optimisation, convex optimisation, and duality, with a focus on the basics principles for analyzing the properties of an optimisation problem, and the characterization of feasible points that are (locally) optimal.
+Correct
+
+Q5: What block schedule is DAT246 in, answer with one letter?
+A5:  A
+Correct
+
+Q6: Is the course DAT246 compulsory?
+A6:  No, the course is not compulsory.
+Correct
+
+Q7: What is the full course name for DAT441?
+A7:  Advanced topics in machine learning.
+Correct
+
+Q8: Does the course DAT441 have any programming prerequisites?
+A8:  No, the course DAT441 does not have any programming prerequisites.
+Incorrect
+Correct Context
+
+Q9: What are the course specific prerequisites for DAT441?
+A9:  A student must have passed a minimum of the following courses:7.5 credits of programming (Python experience desirable but not absolutely required)7.5 credits of a data structures and/or algorithms7.5 credits of basic probability and statistics7.5 credits of calculus7.5 credits of linear algebra7.5 credits of basic machine learning (for example TDA233, MVE440, DAT340).
+Correct
+
+Q10: What is the aim of the course DAT465?
+A10:  The aim of the course DAT465 is to give knowledge and understanding of causality and causal inference from a mathematical, statistical and computational perspective.
+Correct
+
+Q11: Is there a written exam in the course DAT465?
+A11:  No.
+Correct
+
+Q12: Who is the examiner for the course DAT625?
+A12:  The course examiner for the course DAT625 is Simon Olsson, Associate Professor, Data Science and AI, Computer Science and Engineering.
+Correct
+
+Q13: Is english 6 required for the course DAT625?
+A13:  No, English 6 is not required for the course DAT625.
+Incorrect
+Correct Context
+
+Q14: Can i get the grade 5 in the course EEN100?
+A14:  No, you cannot get the grade 5 in the course EEN100. The course has a grading system of UG6 and UG1.5.
+Correct
+
+Q15: What are the course specific requirements for EEN100?
+A15:  A solid foundation in probability and calculus.
+Correct
+
+Q16: Do I need to know Linear Algebra to enrole the course FFR105?
+A16:  No, you do not need to know Linear Algebra to enroll in the course FFR105.
+Incorrect
+Correct Context
+
+Q17: What litterature is used in the course FFR105?
+A17:  None.
+Incorrect
+Wrong context
+
+Q18: Has the examiner written the litterature for the course FFR105?
+A18:  No.
+Incorrect
+Wrong Context
+
+Q19: Is the course FFR135 compulsory?
+A19:  No, the course is elective.
+Correct
+
+Q20: What is the content of the course FFR135?
+A20:  The course FFR135 is based on Machine learning with neural networks.
+Correct
+
+Q21: Is MVE188 a math specific course?
+A21:  No, MVE188 is not a math specific course.
+Incorrect
+Correct Context
+
+Q22: What is the content of the course MVE188?
+A22:  The content of the course MVE188 is Organisation, Literature, and Examination including compulsory elements.
+Incorrect
+Wrong context, But given the context it was not a wierd answer.
+
+Q23: Is the course RRY025 open for exchange students?
+A23:  Yes.
+Correct
+
+Q24: What is the name and mail of the examiner for the course RRY025?
+A24:  
+Name of the examiner: Jouni Kainulainen
+Mail of the examiner: jouni.kainulainen@chalmers.se
+Correct
+
+Q25: Will I learn about vanishing gradients and convolutional neural networks in the course SSY340?
+A25:  No, you will not learn about vanishing gradients and convolutional neural networks in the course SSY340.
+Incorrect
+Wrong context
+
+Q26: What litterature is used in SSY340?
+A26:  Literature used in SSY340 is not specified in the context.
+Incorrect
+Wrong context
+
+Q27: Is there a written exam in the course TIN093?
+A27:  No.
+Incorrect
+Wrong Context
+
+Q28: What litterature is used in the course TIN093?
+A28:  Literature used in the course TIN093 is not specified in the context.
+Correct
+
+Q29: Who is the examiner for the course TMA265 and what is him/hers phone number?
+A29:  The course examiner for TMA265 is Larisa Beilina, and her phone number is +46 31 772 35 67.
+Correct
+
+Q30: Is the examiner of the course TMA882 a woman?
+A30:  No.
+Correct
+
+Q31: What are the course specific prerequisites for TMA882?
+A31:  Basic courses in mathematics, numerical analysis.
+Incorrect (But almost)
+Half of the correct context
+
+Q32: Will i learn about Bayesian inference in the course MVE550?
+A32:  Yes, the course will cover Bayesian inference, including the use of Bayesian methods for modeling and inference.
+Correct
+
+Q33: What type of exam is it in the course MVE550?
+A33:  Examination6 cGrading: TH6 c12 Jan 2026 am J10 Apr 2026 am J24 Aug 2026 am J0218 Written and oral assignments1.5 cGrading: UG1.5 cIn programmesMPDSC - Data Science and AI, Year 1(compulsory)TKAUT - Automation and Mechatronics Engineering, Year 3(elective)TKITE - Software Engineering, Year 3(elective)TKTEM - Engineering Mathematics, Year 2(compulsory)TKEM - Engineering Mathematics, Year 2(compulsory)ExaminerTo personal pagePetter MostadProfessor,Applied Mathematics and Statistics, Mathematical SciencesContactmostad@chalmers.se+
+Incorrect
+Wrong context
+
+Q34: Is DAT450 a pure math course?
+A34:  No, it is not a pure math course.
+Correct
+
+Q35: Can i enrole DAT450 without any programming skills?
+A35:  No, you need to have at least 7.5 credits of programming.
+Correct
+
+Q36: What are the course specific prerequisites for DAT450?
+A36:  The course requires at least 7.5 credits of programming, 7.5 credits of probability theory or mathematics.
+Incorrect (missing one)
+Almost all context
+
+Q37: Is the aim of the course DAT450 mainly how to use CNNs?
+A37:  No, the aim of the course DAT450 is not mainly to use CNNs.
+Correct
+
+Q38: Summarize the content of the course DAT450.
+A38:  The course DAT450 is a Machine learning for natural language processing elective offered at Chalmers University of Technology. It is a second-cycle course that focuses on the application of machine learning techniques to natural language processing tasks. The course is designed to provide students with a comprehensive understanding of the concepts and techniques involved in machine learning for NLP, including supervised and unsupervised learning, neural networks, and deep learning. The course also covers the application of machine learning to NLP tasks, such as text classification, sentiment analysis, and language modeling. The course is taught in English and is open to exchange students. The course is assessed through written and oral assignments, with a passing grade requiring a minimum of a passing grade for all assignments and the project.
+Correct
+
+Q39: Is there a written exam in the course DAT450?
+A39:  Yes, there is a written exam in the course DAT450.
+Incorrect
+Wrong context (written assignments)
+
+Q40: How will the examination work in the course DAT450?
+A40:  The examination will consist of written and oral assignments, with a total of 7.5 credits. The written and oral assignments are compulsory elements of the course.
+Correct
+
+Q41: Who is the examiner for the course DAT570?
+A41:  The examiner for the course DAT570 is Ashkan Panahi, Director of Graduate Studies, Data Science and AI, Computer Science and Engineering.
+Correct
+
+Q42: Is there a written exam in the course DAT570?
+A42:  No, there is no written exam in the course DAT570.
+Correct
+
+Q43: What is the litterature used in DAT570?
+A43:  Course literature to be announced the latest 8 weeks prior to the start of the course.
+Correct
+
+Q44: Do I need to know linear algebra to enrole in the course EEN020?
+A44:  No, you do not need to know linear algebra to enroll in the course EEN020.
+Incorrect
+Correct context but the last of 5 documents
+
+Q45: What litterature is used in the course EEN020?
+A45:  Literature used in the course EEN020 is not specified in the context.
+Incorrect
+Wrong Context
+
+Q46: Is there a written exam in the course EEN020?
+A46:  Yes, there is a written exam.
+Incorrect
+Wrong context (written assignments)
+
+Q47: How am I graded in the course EEN020?
+A47:  You are graded on the basis of the written and oral assignments, with a grade of 4.5.
+Correct even though it was not the answer we expected
+
+Q48: Is the examiner for MVE095 a female?
+A48:  No.
+Incorrect
+Correct context but last document
+
+Q49: What are the course specific prerequisites for MVE095?
+A49:  One variable calculus, linear algebra, probability theory/statistics.
+Correct
+
+Q50: Is there any assignments in the course MVE095?,
+A50:  Yes, there are assignments in the course MVE095.
+Correct
+
+30/50 correct = 60% accuracy
+13/20 incorrect had wrong or not full context.
+
