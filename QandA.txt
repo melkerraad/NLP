@@ -1,0 +1,166 @@
+Q1: Who is the Examiner for the course DAT695?
+A1: Ashkan Panahi
+
+Q2: What are the possible grades for the course DAT695?
+A2: Pass or Fail
+
+Q3: What are the course specific prerequisites for the course TMA947?
+A3: Linear algebra, analysis in one and several variables
+
+Q4: What content will the course TMA947 cover?
+A4: Convex analysis, Optimality conditions and duality, Linear programming, Nonlinear optimization methods
+
+Q5: What block schedule is DAT246 in, answer with one letter?
+Q5: A
+
+Q6: Is the course DAT246 compulsory?
+A6: No
+
+Q7: What is the full course name for DAT441?
+A7: Advanced topics in machine learning
+
+Q8: Does the course DAT441 have any programming prerequisites?
+A8: Yes
+
+Q9: What are the course specific prerequisites for DAT441?
+A9: 7.5 credits of programming (Python experience desirable but not absolutely required)
+7.5 credits of a data structures and/or algorithms
+7.5 credits of basic probability and statistics
+7.5 credits of calculus
+7.5 credits of linear algebra
+7.5 credits of basic machine learning (for example TDA233, MVE440, DAT340)
+
+Q10: What is the aim of the course DAT465?
+A10: The aim for this course is to give knowledge and understanding of causality and causal inference from a mathematical, statistical and computational perspective. It should also provide the tools necessary for solving causal inference problems in practical applications. 
+
+Q11: Is there a written exam in the course DAT465?
+A11: No
+
+Q12: Who is the examiner for the course DAT625?
+A12: Simon Olsson
+
+Q13: Is english 6 required for the course DAT625?
+A13: Yes
+
+Q14: Can i get the grade 5 in the course EEN100?
+A14: No
+
+Q15: What are the course specific requirements for EEN100?
+A15: A solid foundation in probability and calculus
+
+Q16: Do I need to know Linear Algebra to enrole the course FFR105?
+A16: Yes
+
+Q17: What litterature is used in the course FFR105?
+A17: Wahde, M. Biologically inspired optimization methods: An introduction
+
+Q18: Has the examiner written the litterature for the course FFR105?
+A18: Yes
+
+Q19: Is the course FFR135 compulsory?
+A19: No
+
+Q20: What is the content of the course FFR135?
+A20: Statistical mechanics of neural nets, Deep learning, Unsupervised learning
+
+Q21: Is MVE188 a math specific course?
+A21: Yes
+
+Q22: What is the content of the course MVE188?
+A22: Models representing uncertain knowledge
+Constructing Bayesian Networks for modelling uncertainty
+Prediction using basic analytic and numerical methods and with the EM algorithm
+Prediction using sampling methods, for example Markov chain Monte Carlo (MCMC)
+Sequential models, including, e.g., particle filters
+Computation with graphical models
+Variational Bayes approximations
+Approximate Bayesian Computing (ABC)
+Decision theory
+
+Q23: Is the course RRY025 open for exchange students?
+A23: Yes
+
+Q24: What is the name and mail of the examiner for the course RRY025?
+A24: Jouni Kainulainen, jouni.kainulainen@chalmers.se
+
+Q25: Will I learn about vanishing gradients and convolutional neural networks in the course SSY340?
+A25: Yes
+
+Q26: What litterature is used in SSY340?
+A26: We mainly use Ian Goodfellow, Yoshua Bengio and Aaron Courville, Deep Learning, MIT Press, 2016, which is available online http://www.deeplearningbook.org.
+
+Q27: Is there a written exam in the course TIN093?
+A27: Yes
+
+Q28: What litterature is used in the course TIN093?
+A28: Information about literature is given on the course homepage before course start.
+
+Q29: Who is the examiner for the course TMA265 and what is him/hers phone number?
+A29: Larisa Beilina, +46 31 772 35 67
+
+Q30: Is the examiner of the course TMA882 a woman?
+A30: No
+
+Q31: What are the course specific prerequisites for TMA882?
+A31: Basic courses in mathematics, numerical analysis, programming and data structures. Basic Matlab programming.
+
+Q32: Will i learn about Bayesian inference in the course MVE550?
+A32: Yes
+
+Q33: What type of exam is it in the course MVE550?
+A33: Written exam, (and obligatory assignments)
+
+Q34: Is DAT450 a pure math course?
+A34: No
+
+Q35: Can i enrole DAT450 without any programming skills?
+A35: No
+
+Q36: What are the course specific prerequisites for DAT450?
+A36: The course requires at least 7.5 credits of programming, 
+7.5 credits of probability theory or statistics, 
+and a first course in machine learning, such as DAT340, TDA233, SSY340 or MVE440.
+
+Q37: Is the aim of the course DAT450 mainly how to use CNNs?
+A37: No
+
+Q38: Summarize the content of the course DAT450.
+A38: Something about NLP and so on.
+
+Q39: Is there a written exam in the course DAT450?
+A39: No
+
+Q40: How will the examination work in the course DAT450?
+A40: The course is examined by mandatory written assignments submitted as written reports, as well as a self-defined project that requires the submission of a written report and an oral presentation.
+
+Q41: Who is the examiner for the course DAT570?
+A41: Ashkan Panahi
+
+Q42: Is there a written exam in the course DAT570?
+A42: No
+
+Q43: What is the litterature used in DAT570?
+A43: Course literature to be announced the latest 8 weeks prior to the start of the course.
+
+Q44: Do I need to know linear algebra to enrole in the course EEN020?
+A44: Yes
+
+Q45: What litterature is used in the course EEN020?
+A45: Lecture notes and research articles
+Optional: Richard Szeliski, Computer Vision: Algorithms and Applications, available at Cremona or as a free pdf.
+Optional: Richard Hartley, Andrew Zisserman, Multiple View Geometry in Computer Vision, Cambridge University Press, 2004.
+
+Q46: Is there a written exam in the course EEN020?
+A46: No
+
+Q47: How am I graded in the course EEN020?
+A47: U, 3, 4, 5
+
+Q48: Is the examiner for MVE095 a female?
+A48: Yes
+
+Q49: What are the course specific prerequisites for MVE095?
+A49: One variable calculus, linear algebra, probability theory/statistics.
+
+Q50: Is there any assignments in the course MVE095?
+A50: Yes
