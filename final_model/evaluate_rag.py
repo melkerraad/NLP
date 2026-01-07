@@ -28,7 +28,7 @@ print("Loading evaluation data...")
 sys.stdout.flush()
 
 # Load evaluation data
-with open("qa_eval_format.json", "r", encoding="utf-8") as f:
+with open("ylva2.json", "r", encoding="utf-8") as f:
     eval_data = json.load(f)
 
 print("\n=== SANITY CHECK 1 ===\n")
@@ -59,6 +59,11 @@ for qa in eval_data:
             metadata={"course_code": qa['course_code']}
         )
         chunks = text_splitter.split_documents([full_doc])
+        
+        # Prepend course code to each chunk for better retrieval
+        for chunk in chunks:
+            chunk.page_content = f"{qa['course_code']}\n{chunk.page_content}"
+        
         docs.extend(chunks)
         seen_courses.add(qa['course_code'])
 
@@ -91,13 +96,13 @@ def extract_course_code(text):
     return match.group(0) if match else None
 
 def retrieve_with_filter(question):
-    course_code = extract_course_code(question)
-    if course_code:
-        return vectorstore.similarity_search(
-            question, 
-            k=5,
-            filter={"course_code": course_code}
-        )
+    #course_code = extract_course_code(question)
+    #if course_code:
+    #    return vectorstore.similarity_search(
+    #        question, 
+    #        k=5,
+    #        filter={"course_code": course_code}
+    #    )
     return vectorstore.similarity_search(question, k=5)
 
 filtered_retriever = RunnableLambda(lambda q: retrieve_with_filter(q))
@@ -128,15 +133,14 @@ llm = HuggingFacePipeline(pipeline=pipe)
 def combine_context(docs):
     return "\n\n".join([d.page_content for d in docs])
 
-template = """Answer the question with only "Yes" or "No" based on the context below.
+template = """You are answering questions about Chalmers University courses. Use ONLY the information in the context below - do not use prior knowledge.
 
 Context:
 {context}
 
-Question:
-{question}
+Question: {question}
 
-Answer:"""
+Answer with only "Yes" or "No":"""
 
 prompt = ChatPromptTemplate.from_template(template)
 
@@ -230,9 +234,9 @@ print("\n" + "-"*80)
 print("TASK 2: Evaluating baseline (no context)")
 print("-"*80)
 
-baseline_template = """Answer the following question with only "Yes" or "No":
-Question: {question}
-Answer:"""
+baseline_template = """Question: {question}
+
+Answer with only "Yes" or "No":"""
 baseline_prompt = ChatPromptTemplate.from_template(baseline_template)
 baseline_chain = baseline_prompt | llm | StrOutputParser()
 
