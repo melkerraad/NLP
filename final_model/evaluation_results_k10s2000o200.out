@@ -1,0 +1,130 @@
+Starting evaluation script...
+Loading evaluation data...
+
+=== SANITY CHECK 1 ===
+
+Example question: Is the course DAT246 compulsory?
+Gold label: no
+
+Example course context (first 500 chars): DAT246
+Course name: Empirical software engineering
+Type: elective
+
+Overview: Swedish name Empirisk programvaruteknik Code DAT246 Credits 7.5 Credits Owner MPSOF Education cycle Second-cycle Main field of study Computer Science and Engineering, Software Engineering Department COMPUTER SCIENCE AND ENGINEERING Grading TH - Pass with distinction (5), Pass with credit (4), Pass (3), Fail
+
+Course round 1: Teaching language English Application code 24117 Maximum participants 80 (at least 10% of the sea...
+
+=== SANITY CHECK 2 ===
+
+Embedding for test document: [-0.04895174130797386, -0.03986188769340515, -0.021562790498137474]
+
+=== SANITY CHECK 3 ===
+
+
+Total chunks created: 65
+
+Sample chunks:
+
+Chunk 1:
+  Content: DAT246
+DAT246
+Course name: Empirical software engineering
+Type: elective
+
+Overview: Swedish name Empirisk programvaruteknik Code DAT246 Credits 7.5 Credits Owner MPSOF Education cycle Second-cycle Main field of study Computer Science and Engineering, Software Engineering Department COMPUTER SCIENCE ...
+  Metadata: {'course_code': 'DAT246'}
+
+Chunk 2:
+  Content: DAT246
+Learning outcomes (after completion of the course the student should be able to): Knowledge and understanding: Describe, understand, and apply empiricism in software engineering Describe, understand, and partly apply the principles of case study research/experiments/surveys. Describe and unde...
+  Metadata: {'course_code': 'DAT246'}
+
+Chunk 3:
+  Content: DAT246
+engineering. State and explain the importance of threats to validity and how to control
+said threats. Describe and explain the concepts of probability space (incl. conditional probability), random variable, expected value and random processes, and know a number of concrete examples of the co...
+  Metadata: {'course_code': 'DAT246'}
+
+Vector store created
+
+=== SANITY CHECK 4 ===
+
+
+[SIM=0.995] DAT246
+Learning outcomes (after completion of the course the student should be able to): Knowledge and understanding: Describe, understand, and apply empiricism in software engineering Describe, under... [{'course_code': 'DAT246'}]
+
+[SIM=1.054] DAT450
+Literature: Course literature to be announced the latest 8 weeks prior to the start of the course.
+
+Examination including compulsory elements: The course is examined by mandatory written assign... [{'course_code': 'DAT450'}]
+
+[SIM=1.067] SSY340
+Content: supervised learning by cross entropy minimisation combined with evaluations on validation data back propagation and stochastic gradient descent a suitable programming language for impl... [{'course_code': 'SSY340'}]
+
+=== SANITY CHECK 5 ===
+
+Question: Is the course DAT246 compulsory?
+
+Context (first 500 chars):
+DAT246
+Learning outcomes (after completion of the course the student should be able to): Knowledge and understanding: Describe, understand, and apply empiricism in software engineering Describe, understand, and partly apply the principles of case study research/experiments/surveys. Describe and understand the underlying principles of meta-analytical studies. Explain the importance of research ethics. Recognise and define code of ethics for when conducting research in software
+engineering. State...
+
+Answer:
+ No.
+
+
+================================================================================
+EVALUATION
+================================================================================
+
+--------------------------------------------------------------------------------
+TASK 1: Evaluating RAG with context
+--------------------------------------------------------------------------------
+Processing 23 questions...
+  Progress: 5/23 (1.9s elapsed)
+  Progress: 10/23 (13.9s elapsed)
+  Progress: 15/23 (21.0s elapsed)
+  Progress: 20/23 (23.4s elapsed)
+
+RAG Results (completed in 25.2s):
+  Total questions: 23
+  Valid answers: 23 (100.0%)
+  Accuracy: 0.4783
+  F1-score: 0.0000
+
+--------------------------------------------------------------------------------
+TASK 2: Evaluating baseline (no context)
+--------------------------------------------------------------------------------
+Processing 23 questions...
+  Progress: 5/23 (4.7s elapsed)
+  Progress: 10/23 (18.3s elapsed)
+  Progress: 15/23 (31.9s elapsed)
+  Progress: 20/23 (41.0s elapsed)
+
+Baseline Results (completed in 53.4s):
+  Total questions: 23
+  Valid answers: 23 (100.0%)
+  Accuracy: 0.6522
+  F1-score: 0.6000
+
+Comparison:
+  RAG Accuracy: 0.4783 vs Baseline Accuracy: 0.6522
+  RAG F1: 0.0000 vs Baseline F1: 0.6000
+  Did retrieval help? NO (accuracy)
+  Did retrieval help? NO (F1)
+
+--------------------------------------------------------------------------------
+TASK 3: Evaluating retrieval quality
+--------------------------------------------------------------------------------
+  Progress: 10/23
+  Progress: 20/23
+
+Retrieval Results:
+  Total questions: 23
+  Gold document retrieved: 17 (73.9%)
+
+================================================================================
+EVALUATION COMPLETE
+================================================================================
+Eval complete!

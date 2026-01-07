@@ -1,0 +1,132 @@
+Starting evaluation script...
+Loading evaluation data...
+
+=== SANITY CHECK 1 ===
+
+Example question: Is the course DAT246 compulsory?
+Gold label: no
+
+Example course context (first 500 chars): DAT246
+Course name: Empirical software engineering
+Type: elective
+
+Overview: Swedish name Empirisk programvaruteknik Code DAT246 Credits 7.5 Credits Owner MPSOF Education cycle Second-cycle Main field of study Computer Science and Engineering, Software Engineering Department COMPUTER SCIENCE AND ENGINEERING Grading TH - Pass with distinction (5), Pass with credit (4), Pass (3), Fail
+
+Course round 1: Teaching language English Application code 24117 Maximum participants 80 (at least 10% of the sea...
+
+=== SANITY CHECK 2 ===
+
+Embedding for test document: [-0.04895174130797386, -0.03986188769340515, -0.021562790498137474]
+
+=== SANITY CHECK 3 ===
+
+
+Total chunks created: 130
+
+Sample chunks:
+
+Chunk 1:
+  Content: DAT246
+DAT246
+Course name: Empirical software engineering
+Type: elective
+
+Overview: Swedish name Empirisk programvaruteknik Code DAT246 Credits 7.5 Credits Owner MPSOF Education cycle Second-cycle Main field of study Computer Science and Engineering, Software Engineering Department COMPUTER SCIENCE ...
+  Metadata: {'course_code': 'DAT246'}
+
+Chunk 2:
+  Content: DAT246
+Specific entry requirements: English 6 (or by other approved means with the equivalent proficiency level) Applicants enrolled in a programme at Chalmers where the course is included in the study programme are exempted from fulfilling the requirements above.
+
+Course specific prerequisites: To ...
+  Metadata: {'course_code': 'DAT246'}
+
+Chunk 3:
+  Content: DAT246
+Learning outcomes (after completion of the course the student should be able to): Knowledge and understanding: Describe, understand, and apply empiricism in software engineering Describe, understand, and partly apply the principles of case study research/experiments/surveys. Describe and unde...
+  Metadata: {'course_code': 'DAT246'}
+
+Vector store created
+
+=== SANITY CHECK 4 ===
+
+
+[SIM=0.586] DAT246
+Literature: We will use different textbooks and research articles for different parts. More information will be given before the course starts.
+
+Examination including compulsory elements: The e... [{'course_code': 'DAT246'}]
+
+[SIM=0.717] DAT441
+Specific entry requirements: English 6 (or by other approved means with the equivalent proficiency level) Applicants enrolled in a programme at Chalmers where the course is included in the stud... [{'course_code': 'DAT441'}]
+
+[SIM=0.746] DAT450
+Examination including compulsory elements: The course is examined by mandatory written assignments submitted as written reports, as well as a self-defined project that requires the submission o... [{'course_code': 'DAT450'}]
+
+=== SANITY CHECK 5 ===
+
+Question: Is the course DAT246 compulsory?
+
+Context (first 500 chars):
+DAT246
+Literature: We will use different textbooks and research articles for different parts. More information will be given before the course starts.
+
+Examination including compulsory elements: The examination will be conducted through an individual assignment. The assignment is theoretical and practical in its nature. Additionally, a written hall exam is part of the examination. The course examiner may assess individual students in other ways than what is stated above if there are special reas...
+
+Answer:
+ No.
+
+
+================================================================================
+EVALUATION
+================================================================================
+
+--------------------------------------------------------------------------------
+TASK 1: Evaluating RAG with context
+--------------------------------------------------------------------------------
+Processing 23 questions...
+  Progress: 5/23 (0.7s elapsed)
+  Progress: 10/23 (1.6s elapsed)
+  Progress: 15/23 (2.5s elapsed)
+  Progress: 20/23 (3.3s elapsed)
+
+RAG Results (completed in 4.1s):
+  Total questions: 23
+  Valid answers: 23 (100.0%)
+  Accuracy: 0.7391
+  F1-score: 0.7273
+
+--------------------------------------------------------------------------------
+TASK 2: Evaluating baseline (no context)
+--------------------------------------------------------------------------------
+Processing 23 questions...
+  Progress: 5/23 (4.8s elapsed)
+  Progress: 10/23 (18.3s elapsed)
+  Progress: 15/23 (31.9s elapsed)
+  Progress: 20/23 (41.1s elapsed)
+
+Baseline Results (completed in 53.4s):
+  Total questions: 23
+  Valid answers: 23 (100.0%)
+  Accuracy: 0.6522
+  F1-score: 0.6000
+
+Comparison:
+  RAG Accuracy: 0.7391 vs Baseline Accuracy: 0.6522
+  RAG F1: 0.7273 vs Baseline F1: 0.6000
+  Did retrieval help? YES (accuracy)
+  Did retrieval help? YES (F1)
+
+--------------------------------------------------------------------------------
+TASK 3: Evaluating retrieval quality
+--------------------------------------------------------------------------------
+  Progress: 10/23
+  Progress: 20/23
+
+Retrieval Results:
+  Total questions: 23
+  Gold document retrieved: 19 (82.6%)
+
+================================================================================
+EVALUATION COMPLETE
+================================================================================
+Eval complete!
