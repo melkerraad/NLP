@@ -1,0 +1,448 @@
+=== Starting script ===
+Starting evaluation script...
+Loading evaluation data...
+
+=== SANITY CHECK 1 ===
+
+Example question: Is the course DAT246 compulsory?
+Gold label: no
+
+Example course context (first 500 chars): DAT246
+Course name: Empirical software engineering
+Type: elective
+
+Overview: Swedish name Empirisk programvaruteknik Code DAT246 Credits 7.5 Credits Owner MPSOF Education cycle Second-cycle Main field of study Computer Science and Engineering, Software Engineering Department COMPUTER SCIENCE AND ENGINEERING Grading TH - Pass with distinction (5), Pass with credit (4), Pass (3), Fail
+
+Course round 1: Teaching language English Application code 24117 Maximum participants 80 (at least 10% of the sea...
+
+=== SANITY CHECK 2 ===
+
+Embedding for test document: [-0.04895174130797386, -0.03986189886927605, -0.021562783047556877]
+
+LLM LOADED
+.
+  Chunk size option: 200
+
+=== SANITY CHECK 3 ===
+
+
+Total chunks created: 1066
+
+Sample chunks:
+
+Chunk 1:
+  Content: DAT246
+DAT246
+Course name: Empirical software engineering
+Type: elective...
+  Metadata: {'course_code': 'DAT246'}
+
+Chunk 2:
+  Content: DAT246
+Overview: Swedish name Empirisk programvaruteknik Code DAT246 Credits 7.5 Credits Owner MPSOF Education cycle Second-cycle Main field of study Computer Science and Engineering, Software Engineering...
+  Metadata: {'course_code': 'DAT246'}
+
+Chunk 3:
+  Content: DAT246
+cycle Second-cycle Main field of study Computer Science and Engineering, Software Engineering Department COMPUTER SCIENCE AND ENGINEERING Grading TH - Pass with distinction (5), Pass with credit (4),...
+  Metadata: {'course_code': 'DAT246'}
+
+Vector store created
+
+=== SANITY CHECK 4 ===
+
+
+[SIM=0.457] DAT246
+in a programme at Chalmers where the course is included in the study programme are exempted from fulfilling the requirements above.... [{'course_code': 'DAT246'}]
+
+[SIM=0.539] DAT625
+in a programme at Chalmers where the course is included in the study programme are exempted from fulfilling the requirements above.... [{'course_code': 'DAT625'}]
+
+[SIM=0.557] DAT246
+Examination including compulsory elements: The examination will be conducted through an individual assignment. The assignment is theoretical and practical in its nature. Additionally, a written... [{'course_code': 'DAT246'}]
+
+=== SANITY CHECK 5 ===
+
+Question: Is the course DAT246 compulsory?
+
+Context (first 500 chars):
+DAT246
+in a programme at Chalmers where the course is included in the study programme are exempted from fulfilling the requirements above.
+
+DAT625
+in a programme at Chalmers where the course is included in the study programme are exempted from fulfilling the requirements above.
+
+DAT246
+Examination including compulsory elements: The examination will be conducted through an individual assignment. The assignment is theoretical and practical in its nature. Additionally, a written hall
+
+DAT246
+exam i...
+
+Answer:
+ No. 
+
+(Note: The context does not mention the course being compulsory, but it does mention that students in a programme where the course is included are exempted from fulfilling the requirements above. This implies that the course is not compulsory for all students, but rather for students in a specific programme. However, the question is phrased as "Is the course DAT246 compulsory?" which implies a general question about the course being compulsory for all students, not just those in a specific programme. Therefore, the answer is "No".) 
+
+Note: The answer should be a simple "Yes" or "No", without any additional explanation. 
+
+Let me know if I should make any changes. 
+
+Also, I can provide more context if needed.
+
+
+================================================================================
+EVALUATION
+================================================================================
+
+--------------------------------------------------------------------------------
+TASK 1: Evaluating RAG with context
+--------------------------------------------------------------------------------
+Processing 22 questions...
+  Progress: 5/22 (4.3s elapsed)
+  Progress: 10/22 (12.5s elapsed)
+  Progress: 15/22 (18.2s elapsed)
+  Progress: 20/22 (20.6s elapsed)
+
+RAG Results (completed in 22.8s):
+  Total questions: 22
+  Valid answers: 22 (100.0%)
+  Accuracy: 0.9545
+  F1-score: 0.9565
+
+--------------------------------------------------------------------------------
+TASK 2: Evaluating baseline (no context)
+--------------------------------------------------------------------------------
+Processing 22 questions...
+  Progress: 5/22 (7.4s elapsed)
+  Progress: 10/22 (16.7s elapsed)
+  Progress: 15/22 (26.0s elapsed)
+  Progress: 20/22 (34.6s elapsed)
+
+Baseline Results (completed in 40.2s):
+  Total questions: 22
+  Valid answers: 22 (100.0%)
+  Accuracy: 0.5000
+  F1-score: 0.6452
+
+Comparison:
+  RAG Accuracy: 0.9545 vs Baseline Accuracy: 0.5000
+  RAG F1: 0.9565 vs Baseline F1: 0.6452
+  Did retrieval help? YES (accuracy)
+  Did retrieval help? YES (F1)
+
+--------------------------------------------------------------------------------
+TASK 3: Evaluating retrieval quality
+--------------------------------------------------------------------------------
+  Progress: 10/22
+  Progress: 20/22
+
+Retrieval Results:
+  Total questions: 22
+  Gold document retrieved: 22 (100.0%)
+
+--------------------------------------------------------------------------------
+Examining errors:
+--------------------------------------------------------------------------------
+
+Errors:
+  Total questions that were wrong: 1
+ Details:
+  Question: Is MVE188 a math specific course?
+  Predicted: no, Gold: yes
+  Context (first 200 chars): MVE188
+Course specific prerequisites: Basic skills in mathematical statistics. Basic skills in scientific programming (for example in Python, Matlab or R) as achieved by completing TMS150 "Stochastic 
+
+================================================================================
+EVALUATION COMPLETE
+================================================================================
+  Chunk size option: 300
+
+=== SANITY CHECK 3 ===
+
+
+Total chunks created: 633
+
+Sample chunks:
+
+Chunk 1:
+  Content: DAT246
+DAT246
+Course name: Empirical software engineering
+Type: elective...
+  Metadata: {'course_code': 'DAT246'}
+
+Chunk 2:
+  Content: DAT246
+Overview: Swedish name Empirisk programvaruteknik Code DAT246 Credits 7.5 Credits Owner MPSOF Education cycle Second-cycle Main field of study Computer Science and Engineering, Software Engineering Department COMPUTER SCIENCE AND ENGINEERING Grading TH - Pass with distinction (5), Pass with c...
+  Metadata: {'course_code': 'DAT246'}
+
+Chunk 3:
+  Content: DAT246
+COMPUTER SCIENCE AND ENGINEERING Grading TH - Pass with distinction (5), Pass with credit (4), Pass (3), Fail...
+  Metadata: {'course_code': 'DAT246'}
+
+Vector store created
+
+=== SANITY CHECK 4 ===
+
+
+[SIM=0.457] DAT246
+in a programme at Chalmers where the course is included in the study programme are exempted from fulfilling the requirements above.... [{'course_code': 'DAT246'}]
+
+[SIM=0.538] DAT246
+Examination including compulsory elements: The examination will be conducted through an individual assignment. The assignment is theoretical and practical in its nature. Additionally, a written... [{'course_code': 'DAT246'}]
+
+[SIM=0.539] DAT625
+in a programme at Chalmers where the course is included in the study programme are exempted from fulfilling the requirements above.... [{'course_code': 'DAT625'}]
+
+=== SANITY CHECK 5 ===
+
+Question: Is the course DAT246 compulsory?
+
+Context (first 500 chars):
+DAT246
+in a programme at Chalmers where the course is included in the study programme are exempted from fulfilling the requirements above.
+
+DAT246
+Examination including compulsory elements: The examination will be conducted through an individual assignment. The assignment is theoretical and practical in its nature. Additionally, a written hall exam is part of the examination. The course examiner may assess individual students in other ways
+
+DAT625
+in a programme at Chalmers where the course is i...
+
+Answer:
+ No
+
+Note: The context does not mention the course being compulsory. The context only mentions that students in a programme where the course is included are exempted from fulfilling the requirements. This implies that the course is not compulsory for all students, but rather for students in a specific programme. 
+
+Note: The answer should be based solely on the provided context and not on any prior knowledge. 
+
+The final answer is: No.
+
+
+================================================================================
+EVALUATION
+================================================================================
+
+--------------------------------------------------------------------------------
+TASK 1: Evaluating RAG with context
+--------------------------------------------------------------------------------
+Processing 22 questions...
+  Progress: 5/22 (3.3s elapsed)
+  Progress: 10/22 (9.0s elapsed)
+  Progress: 15/22 (16.5s elapsed)
+  Progress: 20/22 (20.4s elapsed)
+
+RAG Results (completed in 24.2s):
+  Total questions: 22
+  Valid answers: 22 (100.0%)
+  Accuracy: 0.9091
+  F1-score: 0.9091
+
+--------------------------------------------------------------------------------
+TASK 2: Evaluating baseline (no context)
+--------------------------------------------------------------------------------
+Processing 22 questions...
+  Progress: 5/22 (7.4s elapsed)
+  Progress: 10/22 (16.7s elapsed)
+  Progress: 15/22 (25.9s elapsed)
+  Progress: 20/22 (34.6s elapsed)
+
+Baseline Results (completed in 40.1s):
+  Total questions: 22
+  Valid answers: 22 (100.0%)
+  Accuracy: 0.5000
+  F1-score: 0.6452
+
+Comparison:
+  RAG Accuracy: 0.9091 vs Baseline Accuracy: 0.5000
+  RAG F1: 0.9091 vs Baseline F1: 0.6452
+  Did retrieval help? YES (accuracy)
+  Did retrieval help? YES (F1)
+
+--------------------------------------------------------------------------------
+TASK 3: Evaluating retrieval quality
+--------------------------------------------------------------------------------
+  Progress: 10/22
+  Progress: 20/22
+
+Retrieval Results:
+  Total questions: 22
+  Gold document retrieved: 22 (100.0%)
+
+--------------------------------------------------------------------------------
+Examining errors:
+--------------------------------------------------------------------------------
+
+Errors:
+  Total questions that were wrong: 2
+ Details:
+  Question: Is MVE188 a math specific course?
+  Predicted: no, Gold: yes
+  Context (first 200 chars): MVE188
+Course specific prerequisites: Basic skills in mathematical statistics. Basic skills in scientific programming (for example in Python, Matlab or R) as achieved by completing TMS150 "Stochastic 
+  Question: Do I need to know Linear Algebra for the course FFR105?
+  Predicted: no, Gold: yes
+  Context (first 200 chars): FFR105
+Course specific prerequisites: Basic programming and courses in linear algebra and mathematical analysis or corresponding
+
+FFR105
+Course specific prerequisites: Basic programming and courses in
+
+================================================================================
+EVALUATION COMPLETE
+================================================================================
+  Chunk size option: 400
+
+=== SANITY CHECK 3 ===
+
+
+Total chunks created: 446
+
+Sample chunks:
+
+Chunk 1:
+  Content: DAT246
+DAT246
+Course name: Empirical software engineering
+Type: elective
+
+Overview: Swedish name Empirisk programvaruteknik Code DAT246 Credits 7.5 Credits Owner MPSOF Education cycle Second-cycle Main field of study Computer Science and Engineering, Software Engineering Department COMPUTER SCIENCE ...
+  Metadata: {'course_code': 'DAT246'}
+
+Chunk 2:
+  Content: DAT246
+Course round 1: Teaching language English Application code 24117 Maximum participants 80 (at least 10% of the seats are reserved for exchange students) Block schedule A Open for exchange students Yes...
+  Metadata: {'course_code': 'DAT246'}
+
+Chunk 3:
+  Content: DAT246
+Eligibility: General entry requirements for Master's level (second cycle) Applicants enrolled in a programme at Chalmers where the course is included in the study programme are exempted from fulfilling the requirements above....
+  Metadata: {'course_code': 'DAT246'}
+
+Vector store created
+
+=== SANITY CHECK 4 ===
+
+
+[SIM=0.457] DAT246
+in a programme at Chalmers where the course is included in the study programme are exempted from fulfilling the requirements above.... [{'course_code': 'DAT246'}]
+
+[SIM=0.522] DAT246
+Examination including compulsory elements: The examination will be conducted through an individual assignment. The assignment is theoretical and practical in its nature. Additionally, a written... [{'course_code': 'DAT246'}]
+
+[SIM=0.538] DAT246
+Examination including compulsory elements: The examination will be conducted through an individual assignment. The assignment is theoretical and practical in its nature. Additionally, a written... [{'course_code': 'DAT246'}]
+
+=== SANITY CHECK 5 ===
+
+Question: Is the course DAT246 compulsory?
+
+Context (first 500 chars):
+DAT246
+in a programme at Chalmers where the course is included in the study programme are exempted from fulfilling the requirements above.
+
+DAT246
+Examination including compulsory elements: The examination will be conducted through an individual assignment. The assignment is theoretical and practical in its nature. Additionally, a written hall exam is part of the examination. The course examiner may assess individual students in other ways than what is stated above if there are special reasons f...
+
+Answer:
+ No. 
+
+Note: The information about DAT625 is not relevant to the question about DAT246. Ignore it. 
+
+Note: The information about the written hall exam is not relevant to the question about the course being compulsory. Ignore it. 
+
+Note: The information about the course examiner's assessment methods is not relevant to the statement about the course being compulsory. Ignore it. 
+
+Note: The information about the exemption from requirements is not relevant to the question about the course being compulsory. Ignore it. 
+
+The relevant information is that the course is included in the study programme, which implies that it is compulsory. However, the text does not explicitly state that the course is compulsory. The text only states that the course is included in the study programme.
+
+
+================================================================================
+EVALUATION
+================================================================================
+
+--------------------------------------------------------------------------------
+TASK 1: Evaluating RAG with context
+--------------------------------------------------------------------------------
+Processing 22 questions...
+  Progress: 5/22 (4.1s elapsed)
+  Progress: 10/22 (9.1s elapsed)
+  Progress: 15/22 (14.8s elapsed)
+  Progress: 20/22 (17.2s elapsed)
+
+RAG Results (completed in 20.0s):
+  Total questions: 22
+  Valid answers: 22 (100.0%)
+  Accuracy: 0.8182
+  F1-score: 0.8182
+
+--------------------------------------------------------------------------------
+TASK 2: Evaluating baseline (no context)
+--------------------------------------------------------------------------------
+Processing 22 questions...
+  Progress: 5/22 (7.4s elapsed)
+  Progress: 10/22 (16.7s elapsed)
+  Progress: 15/22 (25.9s elapsed)
+  Progress: 20/22 (34.6s elapsed)
+
+Baseline Results (completed in 40.1s):
+  Total questions: 22
+  Valid answers: 22 (100.0%)
+  Accuracy: 0.5000
+  F1-score: 0.6452
+
+Comparison:
+  RAG Accuracy: 0.8182 vs Baseline Accuracy: 0.5000
+  RAG F1: 0.8182 vs Baseline F1: 0.6452
+  Did retrieval help? YES (accuracy)
+  Did retrieval help? YES (F1)
+
+--------------------------------------------------------------------------------
+TASK 3: Evaluating retrieval quality
+--------------------------------------------------------------------------------
+  Progress: 10/22
+  Progress: 20/22
+
+Retrieval Results:
+  Total questions: 22
+  Gold document retrieved: 21 (95.5%)
+
+--------------------------------------------------------------------------------
+Examining errors:
+--------------------------------------------------------------------------------
+
+Errors:
+  Total questions that were wrong: 4
+ Details:
+  Question: Is MVE188 a math specific course?
+  Predicted: no, Gold: yes
+  Context (first 200 chars): MVE188
+Course specific prerequisites: Basic skills in mathematical statistics. Basic skills in scientific programming (for example in Python, Matlab or R) as achieved by completing TMS150 "Stochastic 
+  Question: Do I need to know Linear Algebra for the course FFR105?
+  Predicted: no, Gold: yes
+  Context (first 200 chars): FFR105
+Course specific prerequisites: Basic programming and courses in linear algebra and mathematical analysis or corresponding
+
+FFR105
+Course specific prerequisites: Basic programming and courses in
+  Question: Do I have to do a presentation in MVE172?
+  Predicted: no, Gold: yes
+  Context (first 200 chars): MVE172
+Examination including compulsory elements: Written exam. Mandatory computer laboration and presentation. The course examiner may assess individual students in other ways than what is stated abo
+  Question: Is the teaching language Swedish for MVE190?
+  Predicted: yes, Gold: no
+  Context (first 200 chars): MVE095
+Course round 1: Teaching language English Application code 20125 Open for exchange students Yes
+
+Eligibility: General entry requirements for Master's level (second cycle) Applicants enrolled in
+
+================================================================================
+EVALUATION COMPLETE
+================================================================================
+
+Chunk Size vs RAG Accuracy:
+  Chunk Size: 200 => RAG Accuracy: 0.9545
+  Chunk Size: 300 => RAG Accuracy: 0.9091
+  Chunk Size: 400 => RAG Accuracy: 0.8182
+=== Script Complete ===
