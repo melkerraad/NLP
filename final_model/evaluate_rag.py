@@ -1,6 +1,3 @@
-"""
-RAG evaluation with automatic metrics (Ass5 style)
-"""
 import json
 from langchain_huggingface import HuggingFaceEmbeddings, HuggingFacePipeline
 from langchain_chroma import Chroma
@@ -74,8 +71,8 @@ llm = HuggingFacePipeline(pipeline=pipe)
 print("\nLLM LOADED\n.")
 
 
-# Split documents into chunks
-# Can be extended to test different chunk sizes
+# Split documents into chunks, this list can be extended or changed to test different chunk sizes etc. as 
+# explained in the report.
 chunk_sizes = [200]
 resulting_chunk_accuracy = []
 
@@ -128,20 +125,7 @@ for cs in chunk_sizes:
     for res, score in results:
         print(f"\n[SIM={score:.3f}] {res.page_content[:200]}... [{res.metadata}]")
 
-    # Smart retrieval with course code filtering
-    def extract_course_code(text):
-        match = re.search(r"\b[A-Z]{3}\d{3}\b", text)
-        return match.group(0) if match else None
-
-
     def retrieve_with_filter(question):
-        #course_code = extract_course_code(question)
-        #if course_code:
-        #    return vectorstore.similarity_search(
-        #        question, 
-        #        k=5,
-        #        filter={"course_code": course_code}
-        #    )
         return vectorstore.similarity_search(question, k=5)
 
     filtered_retriever = RunnableLambda(lambda q: retrieve_with_filter(q))
@@ -238,6 +222,10 @@ for cs in chunk_sizes:
 
     elapsed_time = time.time() - start_time
 
+    # Initialize with default values
+    rag_accuracy = 0.0
+    rag_f1 = 0.0
+    
     print(f"\nRAG Results (completed in {elapsed_time:.1f}s):")
     print(f"  Total questions: {len(eval_data)}")
     print(f"  Valid answers: {len(rag_predictions)} ({100*len(rag_predictions)/len(eval_data):.1f}%)")
@@ -246,6 +234,8 @@ for cs in chunk_sizes:
         rag_f1 = f1_score(rag_gold_labels, rag_predictions, pos_label='yes')
         print(f"  Accuracy: {rag_accuracy:.4f}")
         print(f"  F1-score: {rag_f1:.4f}")
+    else:
+        print(f"  Warning: No valid predictions generated")
 
     # TASK 2: Baseline (no context)
     print("\n" + "-"*80)
@@ -281,6 +271,10 @@ for cs in chunk_sizes:
 
     elapsed_time = time.time() - start_time
 
+    # Initialize with default values
+    baseline_accuracy = 0.0
+    baseline_f1 = 0.0
+    
     print(f"\nBaseline Results (completed in {elapsed_time:.1f}s):")
     print(f"  Total questions: {len(eval_data)}")
     print(f"  Valid answers: {len(baseline_predictions)} ({100*len(baseline_predictions)/len(eval_data):.1f}%)")
@@ -289,12 +283,18 @@ for cs in chunk_sizes:
         baseline_f1 = f1_score(baseline_gold_labels, baseline_predictions, pos_label='yes')
         print(f"  Accuracy: {baseline_accuracy:.4f}")
         print(f"  F1-score: {baseline_f1:.4f}")
-        
+    else:
+        print(f"  Warning: No valid predictions generated")
+    
+    # Comparison (now safe regardless of prediction generation)
+    if len(rag_predictions) > 0 and len(baseline_predictions) > 0:
         print(f"\nComparison:")
         print(f"  RAG Accuracy: {rag_accuracy:.4f} vs Baseline Accuracy: {baseline_accuracy:.4f}")
         print(f"  RAG F1: {rag_f1:.4f} vs Baseline F1: {baseline_f1:.4f}")
         print(f"  Did retrieval help? {'YES' if rag_accuracy > baseline_accuracy else 'NO'} (accuracy)")
         print(f"  Did retrieval help? {'YES' if rag_f1 > baseline_f1 else 'NO'} (F1)")
+    else:
+        print(f"\nSkipping comparison: insufficient predictions generated")
 
 
 
